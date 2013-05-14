@@ -8,6 +8,11 @@ var NB_Y_BLOC = 15;
 var BLOC_SIZE = 32;
 var PLAYER_SIZE = 8;
 
+var SPEED_X =  2; // movement in pixels per second
+var MAX_SPEED_X =  4; // movement in pixels per second
+var G = 0.1;
+
+
 //Create a sound 
 // /!\ Does not work in firefox
 // var bullet_sound = new Audio("sound/bullet.mp3");
@@ -145,8 +150,13 @@ GameState = function(){
 	this.viewport = new Viewport(gameEngine);
 }
 
+var speed = { 
+		x : 0, 
+		y : 0
+	};
+
 var heroStart = {
-		speed: 128, // movement in pixels per second
+		speed: {x:0, y: 0},
 		pos:{ x: 600, y: 400 }
 	};
 
@@ -157,22 +167,35 @@ GameState.prototype = {
 GameState.prototype.Update = function (modifier) {
 	var animate = false;
 	
-	if (KB_UP in gameEngine.keysDown) {
-		this.hero.pos.y -= this.hero.speed * modifier;
-	}
-	if (KB_DOWN in gameEngine.keysDown) {
-		this.hero.pos.y += this.hero.speed * modifier;
-	}
+	// if (KB_UP in gameEngine.keysDown) {
+	// 	this.hero.pos.y -= this.hero.speed * modifier;
+	// }
+	// if (KB_DOWN in gameEngine.keysDown) {
+	// 	this.hero.pos.y += this.hero.speed * modifier;
+	// }
 	if (KB_LEFT in gameEngine.keysDown) {
-		this.hero.pos.x -= this.hero.speed * modifier;
+		this.hero.speed.x -= SPEED_X * modifier;
+		if (this.hero.speed.x < -MAX_SPEED_X)
+			this.hero.speed.x = -MAX_SPEED_X;
 	}
 	if (KB_RIGHT in gameEngine.keysDown) {
-		this.hero.pos.x += this.hero.speed * modifier;
+		this.hero.speed.x += SPEED_X * modifier;
+		if (this.hero.speed.x > MAX_SPEED_X)
+			this.hero.speed.x = MAX_SPEED_X;
 	}
 	if (KB_ESCAPE in gameEngine.keysDown) {
 		gameEngine.ChangeState("menu");
 	}
-	
+
+	G = 1;
+	this.hero.speed.y += G * modifier; // gravity
+	// console.log (modifier);
+	// if (this.hero.pos.y > 450){
+	//     this.hero.speed.y *= -1;
+	// }
+
+	this.handleCollisions(level, modifier);
+
 	// Are they touching?
 	// if (
 	// 	this.hero.x <= (this.monster.x + 32)
@@ -200,10 +223,28 @@ GameState.prototype.Update = function (modifier) {
 	}
 };
 
+GameState.prototype.handleCollisions = function (level, modifer){
+	var newX = this.hero.pos.x + this.hero.speed.x;
+	var newY = this.hero.pos.y + this.hero.speed.y;
+
+	var idX = Math.floor(newX / BLOC_SIZE);
+	var idY = Math.floor(newY / BLOC_SIZE);
+	
+	if (level[idY][idX] != 0)
+	{
+		this.hero.speed.y = -0.65;
+		console.log ("collision !" + this.hero.speed.y);
+	}
+		
+
+	this.hero.pos.x += this.hero.speed.x;
+	this.hero.pos.y += this.hero.speed.y;
+}
+
+
 // Draw everything
 GameState.prototype.Draw = function () {
 	g_Screen.drawRect (0,0, GAME_WIDTH, GAME_HEIGHT, "#303030");
-
 	this.DrawLevel(level);
 	this.DrawPlayer();
 	// Score
