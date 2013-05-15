@@ -166,12 +166,11 @@ GameState.prototype = {
 
 GameState.prototype.Update = function (modifier) {
 	var animate = false;
-	
 	// if (KB_UP in gameEngine.keysDown) {
-	// 	this.hero.pos.y -= this.hero.speed * modifier;
+	//	this.hero.pos.y -= this.hero.speed * modifier;
 	// }
 	// if (KB_DOWN in gameEngine.keysDown) {
-	// 	this.hero.pos.y += this.hero.speed * modifier;
+	//	this.hero.pos.y += this.hero.speed * modifier;
 	// }
 	if (KB_LEFT in gameEngine.keysDown) {
 		this.hero.speed.x -= SPEED_X * modifier;
@@ -223,19 +222,56 @@ GameState.prototype.Update = function (modifier) {
 	}
 };
 
-GameState.prototype.handleCollisions = function (level, modifer){
-	var newX = this.hero.pos.x + this.hero.speed.x;
-	var newY = this.hero.pos.y + this.hero.speed.y;
+function getCell (pt){
+	var res = 
+	{
+		x : Math.floor(pt.x / BLOC_SIZE),
+		y : Math.floor(pt.y / BLOC_SIZE)
+	}
+	return res;
+}
 
-	var idX = Math.floor(newX / BLOC_SIZE);
-	var idY = Math.floor(newY / BLOC_SIZE);
-	
-	if (level[idY][idX] != 0)
+function hasCollision (level, cell){
+	res = 0;
+	if ((cell.x >= 0 && cell.x < NB_X_BLOC)
+	||(cell.y >= 0 && cell.y < NB_Y_BLOC))
+	{
+		res = level[cell.y][cell.x];
+	}
+
+	return res;
+}
+
+GameState.prototype.handleCollisions = function (level, modifer){
+	this.hero.cell = getCell (this.hero.pos);
+	var newPos = 
+	{
+		x : this.hero.pos.x + this.hero.speed.x,
+		y : this.hero.pos.y + this.hero.speed.y
+	}
+	var newPosBottomRight = {
+		x: newPos.x + PLAYER_SIZE,
+		y: newPos.y + PLAYER_SIZE
+	}
+	var newCell = getCell (newPos);
+	var newCellBR = getCell (newPosBottomRight);
+	// Vertical collisions 
+	if (( hasCollision (level, {x:newCell.x, y:newCellBR.y}) != 0 || hasCollision (level, newCellBR) != 0) && newCellBR.y > this.hero.cell.y)
 	{
 		this.hero.speed.y = -0.65;
-		console.log ("collision !" + this.hero.speed.y);
+		// console.log ("collision !" + this.hero.speed.y);
 	}
-		
+	else
+	{
+		if ((hasCollision (level, {x:newCell.x, y: newCell.y})!=0 || hasCollision (level, {x:newCell.x, y: newCellBR.y})!=0) && newCell.x < this.hero.cell.x){
+			this.hero.speed.x *= -1;
+		}
+		if ((hasCollision (level, {x:newCellBR.x, y: newCell.y})!=0 || hasCollision (level, {x:newCellBR.x, y: newCellBR.y})!=0) && newCellBR.x > this.hero.cell.x){
+			this.hero.speed.x *= -1;
+		}	
+	}
+	// Horizontal collisions
+	// if (levellevel[newCell.y][newCell.x])
 
 	this.hero.pos.x += this.hero.speed.x;
 	this.hero.pos.y += this.hero.speed.y;
