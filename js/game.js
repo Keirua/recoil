@@ -290,7 +290,6 @@ GameState.prototype.DrawLevel = function (level) {
 		3:"bloc3",
 		4:"bloc4"
 	};
-		
 
 	for (x = 0; x < NB_X_BLOC; ++x)
 		for (y = 0; y < NB_Y_BLOC; ++y)
