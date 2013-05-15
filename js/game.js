@@ -9,7 +9,7 @@ var BLOC_SIZE = 32;
 var PLAYER_SIZE = 8;
 
 var SPEED_X =  2; // movement in pixels per second
-var MAX_SPEED_X =  0.8;
+var MAX_SPEED_X =  0.5;
 var G = 0.1;
 
 
