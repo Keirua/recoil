@@ -9,7 +9,7 @@ var BLOC_SIZE = 32;
 var PLAYER_SIZE = 8;
 
 var SPEED_X =  2; // movement in pixels per second
-var MAX_SPEED_X =  4; // movement in pixels per second
+var MAX_SPEED_X =  1;
 var G = 0.1;
 
 
@@ -188,12 +188,11 @@ GameState.prototype.Update = function (modifier) {
 
 	G = 1;
 	this.hero.speed.y += G * modifier; // gravity
-	// console.log (modifier);
-	// if (this.hero.pos.y > 450){
-	//     this.hero.speed.y *= -1;
-	// }
-
+	
 	this.handleCollisions(level, modifier);
+
+	this.hero.pos.x += this.hero.speed.x;
+	this.hero.pos.y += this.hero.speed.y;
 
 	// Are they touching?
 	// if (
@@ -263,6 +262,7 @@ GameState.prototype.handleCollisions = function (level, modifer){
 	}
 	else
 	{
+		// Horizontal collisions
 		if ((hasCollision (level, {x:newCell.x, y: newCell.y})!=0 || hasCollision (level, {x:newCell.x, y: newCellBR.y})!=0) && newCell.x < this.hero.cell.x){
 			this.hero.speed.x *= -1;
 		}
@@ -270,11 +270,6 @@ GameState.prototype.handleCollisions = function (level, modifer){
 			this.hero.speed.x *= -1;
 		}	
 	}
-	// Horizontal collisions
-	// if (levellevel[newCell.y][newCell.x])
-
-	this.hero.pos.x += this.hero.speed.x;
-	this.hero.pos.y += this.hero.speed.y;
 }
 
 
@@ -289,6 +284,13 @@ GameState.prototype.Draw = function () {
 
 GameState.prototype.DrawLevel = function (level) {
 	g_Screen.drawRect (0,0, GAME_WIDTH, GAME_HEIGHT, "#303030");
+	imageName = {
+		1:"bloc1",
+		2:"bloc2",
+		3:"bloc3",
+		4:"bloc4"
+	};
+		
 
 	for (x = 0; x < NB_X_BLOC; ++x)
 		for (y = 0; y < NB_Y_BLOC; ++y)
@@ -298,7 +300,7 @@ GameState.prototype.DrawLevel = function (level) {
 				xOffset = x*BLOC_SIZE;
 				yOffset = y*BLOC_SIZE;
 				this.viewport.DrawSprite (
-								"bloc"+v, 
+								imageName[v], 
 								xOffset,
 								yOffset,
 								BLOC_SIZE,
