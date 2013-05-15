@@ -9,7 +9,7 @@ var BLOC_SIZE = 32;
 var PLAYER_SIZE = 8;
 
 var SPEED_X =  2; // movement in pixels per second
-var MAX_SPEED_X =  1;
+var MAX_SPEED_X =  0.8;
 var G = 0.1;
 
 
@@ -295,7 +295,7 @@ GameState.prototype.DrawLevel = function (level) {
 		for (y = 0; y < NB_Y_BLOC; ++y)
 		{
 			v = level[y][x];
-			if (v != 0) {
+			if (0 != v) {
 				xOffset = x*BLOC_SIZE;
 				yOffset = y*BLOC_SIZE;
 				this.viewport.DrawSprite (
@@ -309,8 +309,18 @@ GameState.prototype.DrawLevel = function (level) {
 			
 		}
 
-	// Score
-	g_Screen.drawText ("Hero x : " + this.hero.pos.x.toFixed (1), 32, 32, "rgb(0, 250, 250)", "24px Helvetica");
+	// "HUD". Well, sort of
+	g_Screen.drawText (
+			"Hero : (" 
+			+ this.hero.pos.x.toFixed (1)
+			+ ', '
+			+ this.hero.pos.y.toFixed (1)
+			+ ')', 
+			32,
+			32,
+			"rgb(0, 250, 250)", 
+			"24px Helvetica"
+		);
 };
 
 
