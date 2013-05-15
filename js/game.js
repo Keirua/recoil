@@ -10,8 +10,7 @@ var PLAYER_SIZE = 8;
 
 var SPEED_X =  2; // movement in pixels per second
 var MAX_SPEED_X =  0.5;
-var G = 0.1;
-
+var G = 1;
 
 //Create a sound 
 // /!\ Does not work in firefox
@@ -144,6 +143,27 @@ CreditState.prototype.Draw = function () {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Editor state
+///////////////////////////////////////////////////////////////////////////////
+
+EditorState = function(){
+	this.viewport = new Viewport(gameEngine);
+}
+
+
+EditorState.prototype = {
+	hero : heroStart
+}
+
+EditorState.prototype.Update = function (modifier) {
+
+}
+
+EditorState.prototype.Draw = function (modifier) {
+	
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Game state
 ///////////////////////////////////////////////////////////////////////////////
 GameState = function(){
@@ -162,6 +182,14 @@ var heroStart = {
 
 GameState.prototype = {
 	hero : heroStart
+}
+
+GameState.prototype.HandleEvent = function(event){
+	console.log ("yeah !");
+	if (event.keyCode == 'e'.charCodeAt(0)) {	// Pressing "enter"
+		console.log ("yeah 2 !");
+		gameEngine.ChangeState("editorState");		
+	}
 }
 
 GameState.prototype.Update = function (modifier) {
@@ -186,39 +214,26 @@ GameState.prototype.Update = function (modifier) {
 		gameEngine.ChangeState("menu");
 	}
 
-	G = 1;
 	this.hero.speed.y += G * modifier; // gravity
 	
+	// Yes, this is hacky. No, I don't care.
+	if (
+		this.hero.pos.x+this.hero.speed.x+1.5*PLAYER_SIZE > GAME_WIDTH
+	) {
+		// Reached the end of the level
+		this.hero.pos.x = 500;
+		gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.5, false) );
+	}
+
 	this.handleCollisions(level, modifier);
 
 	this.hero.pos.x += this.hero.speed.x;
 	this.hero.pos.y += this.hero.speed.y;
 
 	// Are they touching?
-	// if (
-	// 	this.hero.x <= (this.monster.x + 32)
-	// 	&& this.monster.x <= (this.hero.x + 32)
-	// 	&& this.hero.y <= (this.monster.y + 32)
-	// 	&& this.monster.y <= (this.hero.y + 32)
-	// ) {
-	// 	this.Reset();
-	// 	++this.monstersCaught;
 	// 	bullet_sound.play();
 	// 	gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.3, false) );
-	// }
-	if (
-		this.hero.pos.x > GAME_WIDTH
-	) {
-		// this.hero.pos.x = heroStart.pos.x;
-
-		console.log(this.hero);
-		this.hero.pos.x = 600;
-		console.log(heroStart);
-		// this.Reset ();
-		// this.hero.pos.x = 100;
-		// bullet_sound.play();
-		gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.3, false) );
-	}
+	
 };
 
 function getCell (pt){
@@ -258,7 +273,6 @@ GameState.prototype.handleCollisions = function (level, modifer){
 	if (( hasCollision (level, {x:newCell.x, y:newCellBR.y}) != 0 || hasCollision (level, newCellBR) != 0) && newCellBR.y > this.hero.cell.y)
 	{
 		this.hero.speed.y = -0.65;
-		// console.log ("collision !" + this.hero.speed.y);
 	}
 	else
 	{
@@ -350,11 +364,14 @@ var g_Screen = new Screen (gameEngine);
 var menuState = new MenuState();
 var gameState = new GameState();
 var creditState = new CreditState();
+var editorState = new EditorState();
 
-gameEngine.states = {
+gameEngine.states = 
+	{
 		menu:menuState,
 		game:gameState,
-		credit:creditState
+		credit:creditState,
+		editor:editorState
 	};
 
 gameEngine.Init();
