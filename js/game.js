@@ -43,9 +43,15 @@ g_DataCache.queue = [
 	"bloc4"
 ];
 
+g_MouseCursor = {};
+
 // Handles the mouse events
 document.onmousemove = function (event){
-	// console.log("mouse", event);
+	g_MouseCursor = 
+	{
+		x : event.clientX-document.documentElement.scrollLeft-gameEngine.canvas.offsetLeft,
+		y : event.clientY-document.documentElement.scrollTop-gameEngine.canvas.offsetTop
+	};
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -152,7 +158,7 @@ EditorState = function(){
 
 
 EditorState.prototype = {
-	hero : heroStart
+	currElem : 0
 }
 
 EditorState.prototype.Update = function (modifier) {
@@ -160,7 +166,28 @@ EditorState.prototype.Update = function (modifier) {
 }
 
 EditorState.prototype.Draw = function (modifier) {
-	
+	gameEngine.states['game'].DrawLevel(level);
+
+	if (this.currElem){
+
+	}
+}
+
+EditorState.prototype.HandleEvent = function(event){
+	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
+		gameEngine.states['game'].Init();
+		gameEngine.ChangeState("game");
+	}
+}
+
+EditorState.prototype.MouseClick = function(event){
+	// var pt = 
+	// {
+	// 	x : event.clientX-document.documentElement.scrollLeft-gameEngine.canvas.offsetLeft,
+	// 	y : event.clientY-document.documentElement.scrollTop-gameEngine.canvas.offsetTop
+	// };
+
+	console.log (g_MouseCursor);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,20 +213,16 @@ GameState.prototype = {
 
 GameState.prototype.HandleEvent = function(event){
 	console.log ("yeah !");
-	if (event.keyCode == 'e'.charCodeAt(0)) {	// Pressing "enter"
-		console.log ("yeah 2 !");
-		gameEngine.ChangeState("editorState");		
+	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
+		gameEngine.ChangeState("editor");		
 	}
 }
 
+GameState.prototype.Init = function() {
+	this.hero = heroStart;
+}
+
 GameState.prototype.Update = function (modifier) {
-	var animate = false;
-	// if (KB_UP in gameEngine.keysDown) {
-	//	this.hero.pos.y -= this.hero.speed * modifier;
-	// }
-	// if (KB_DOWN in gameEngine.keysDown) {
-	//	this.hero.pos.y += this.hero.speed * modifier;
-	// }
 	if (KB_LEFT in gameEngine.keysDown) {
 		this.hero.speed.x -= SPEED_X * modifier;
 		if (this.hero.speed.x < -MAX_SPEED_X)

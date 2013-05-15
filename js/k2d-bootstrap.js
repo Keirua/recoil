@@ -309,6 +309,7 @@ K2DEngine.prototype.Init = function (options){
 	}, false);
 	
 	window.onkeydown = that.KeyPress;
+	window.onmousedown = that.MouseClick;
 	
 	// Initializes the game
 	prevDate = Date.now();
@@ -365,6 +366,16 @@ K2DEngine.prototype.KeyPress = function (event) {
 		{
 			st.HandleEvent(event);
 		}
+	}
+}
+
+// Handles the keypress events, and delegates to the current state (if necessary)
+K2DEngine.prototype.MouseClick = function (event) {
+	// If the current states implements a method "HandleEvent", we call this method
+	var st = that.states[that.currState];
+	if (st.MouseClick)
+	{
+		st.MouseClick(event);
 	}
 }
 
