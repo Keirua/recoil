@@ -32,9 +32,11 @@ var level = [
 	[1,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-	[1,0,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0],
+	[1,0,0,0,0,0,0,0,4,3,2,2,0,0,0,0,0,0,0,0],
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
+
+var currLevel = level;
 
 g_DataCache.queue = [
 	"bloc1",
@@ -179,6 +181,7 @@ EditorState.prototype.HandleEvent = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		gameEngine.states['game'].Init();
 		gameEngine.ChangeState("game");
+		console.log (JSON.stringify (level));
 	}
 	console.log (c);
 	if (c >= 48 && c <= 52){
@@ -283,6 +286,27 @@ function hasCollision (level, cell){
 	return res;
 }
 
+GameState.prototype.handleVerticalCollisions  = function(block1, block2){
+	blocs = [block1, block2];
+
+	for (i = 0; i < blocs.length; i++)
+	{
+		currBlock = blocs [i];
+
+		if (hasCollision (level, currBlock) != 0){
+			// Block that can be destroyed
+			if (level[currBlock.y][currBlock.x] == 2){
+				level[currBlock.y][currBlock.x] = 0;
+			}
+			else if (level[currBlock.y][currBlock.x] == 3){
+				// game.Init();
+				gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
+
+			}
+		}
+	}
+}
+
 GameState.prototype.handleCollisions = function (level, modifer){
 	this.hero.cell = getCell (this.hero.pos);
 	var newPos = 
@@ -296,9 +320,19 @@ GameState.prototype.handleCollisions = function (level, modifer){
 	}
 	var newCell = getCell (newPos);
 	var newCellBR = getCell (newPosBottomRight);
-	// Vertical collisions 
-	if (( hasCollision (level, {x:newCell.x, y:newCellBR.y}) != 0 || hasCollision (level, newCellBR) != 0) && newCellBR.y > this.hero.cell.y)
+	// Vertical collisions
+
+	if ((hasCollision (level, {x:newCell.x, y:newCellBR.y}) != 0 || hasCollision (level, newCellBR) != 0) && newCellBR.y > this.hero.cell.y)
 	{
+		this.handleVerticalCollisions({x:newCell.x, y:newCellBR.y}, newCellBR);
+		// if (hasCollision (level, {x:newCell.x, y:newCellBR.y}) != 0){
+		// 	if (level[newCellBR.y][newCell.x] == 2){
+		// 		level[newCellBR.y][newCell.x] = 0;
+		// 	}
+		// }
+		// else if (hasCollision (level, newCellBR) != 0 && level[newCellBR.y][newCell.x] == 2){
+		// 	level[newCellBR.y][newCellBR.x] = 0;
+		// }
 		this.hero.speed.y = -0.65;
 	}
 	else
