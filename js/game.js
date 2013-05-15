@@ -167,27 +167,31 @@ EditorState.prototype.Update = function (modifier) {
 
 EditorState.prototype.Draw = function (modifier) {
 	gameEngine.states['game'].DrawLevel(level);
-
-	if (this.currElem){
-
+	if (this.currElem != 0){
+		cell = getCell(g_MouseCursor);
+		drawBlock(cell.x*BLOC_SIZE, cell.y*BLOC_SIZE, this.currElem);
 	}
 }
 
 EditorState.prototype.HandleEvent = function(event){
+	var c = event.keyCode;
+
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		gameEngine.states['game'].Init();
 		gameEngine.ChangeState("game");
 	}
+	console.log (c);
+	if (c >= 48 && c <= 52){
+		this.currElem = event.keyCode - 48; 
+	}
 }
 
 EditorState.prototype.MouseClick = function(event){
-	// var pt = 
-	// {
-	// 	x : event.clientX-document.documentElement.scrollLeft-gameEngine.canvas.offsetLeft,
-	// 	y : event.clientY-document.documentElement.scrollTop-gameEngine.canvas.offsetTop
-	// };
+	if (this.currElem != 0){
+		cell = getCell(g_MouseCursor);
 
-	console.log (g_MouseCursor);
+		level[cell.y][cell.x] = this.currElem;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -319,15 +323,27 @@ GameState.prototype.Draw = function () {
 	// g_Screen.drawText ("Goblins caught: " + this.monstersCaught, 32, 32, "rgb(0, 250, 250)", "24px Helvetica");
 };
 
-GameState.prototype.DrawLevel = function (level) {
-	g_Screen.drawRect (0,0, GAME_WIDTH, GAME_HEIGHT, "#303030");
-	imageName = {
+imageName = {
 		1:"bloc1",
 		2:"bloc2",
 		3:"bloc3",
 		4:"bloc4"
 	};
 
+function drawBlock(x,y, blocId){
+	gameEngine.states ['game'].viewport.DrawSprite (
+					imageName[blocId], 
+					x,
+					y,
+					BLOC_SIZE,
+					BLOC_SIZE
+				);
+}
+
+
+GameState.prototype.DrawLevel = function (level) {
+	g_Screen.drawRect (0,0, GAME_WIDTH, GAME_HEIGHT, "#303030");
+	
 	for (x = 0; x < NB_X_BLOC; ++x)
 		for (y = 0; y < NB_Y_BLOC; ++y)
 		{
@@ -335,13 +351,14 @@ GameState.prototype.DrawLevel = function (level) {
 			if (0 != v) {
 				xOffset = x*BLOC_SIZE;
 				yOffset = y*BLOC_SIZE;
-				this.viewport.DrawSprite (
-								imageName[v], 
-								xOffset,
-								yOffset,
-								BLOC_SIZE,
-								BLOC_SIZE
-							);
+				drawBlock (xOffset, yOffset, v);
+				// this.viewport.DrawSprite (
+				// 				imageName[v], 
+				// 				xOffset,
+				// 				yOffset,
+				// 				BLOC_SIZE,
+				// 				BLOC_SIZE
+				// 			);
 			}
 			
 		}

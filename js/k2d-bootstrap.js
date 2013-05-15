@@ -210,7 +210,9 @@ Viewport.prototype = {
 
 Viewport.prototype.DrawSprite = function (name, x, y, w, h)
 {
-	this.context.drawImage(g_DataCache.getImage(name), x - this.x, y-this.y, w, h);
+	img = g_DataCache.getImage(name);
+	if (img != null)
+		this.context.drawImage(img, x - this.x, y-this.y, w, h);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
