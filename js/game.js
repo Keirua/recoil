@@ -12,6 +12,15 @@ var SPEED_X =  2; // movement in pixels per second
 var MAX_SPEED_X =  0.5;
 var G = 1;
 
+
+var BLOCK = {
+	NONE : 0,
+	WALL : 1,
+	DESTROYABLE : 2, 
+	EXPLODE : 3,
+	ROCKET : 4 			// There might be 2 kinds of rockets 
+};
+
 //Create a sound 
 // /!\ Does not work in firefox
 // var bullet_sound = new Audio("sound/bullet.mp3");
@@ -36,25 +45,12 @@ var level = [
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
-var currLevel = level;
-
 g_DataCache.queue = [
 	"bloc1",
 	"bloc2",
 	"bloc3",
 	"bloc4"
 ];
-
-g_MouseCursor = {};
-
-// Handles the mouse events
-// document.onmousemove = function (event){
-// 	g_MouseCursor = 
-// 	{
-// 		x : event.clientX-document.documentElement.scrollLeft-gameEngine.canvas.offsetLeft,
-// 		y : event.clientY-document.documentElement.scrollTop-gameEngine.canvas.offsetTop
-// 	};
-// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Menu state
@@ -163,10 +159,6 @@ EditorState.prototype = {
 	currElem : 0
 }
 
-EditorState.prototype.Update = function (modifier) {
-
-}
-
 EditorState.prototype.Draw = function (modifier) {
 	gameEngine.states['game'].DrawLevel(level);
 	//Displays a potential future block if necessary
@@ -184,13 +176,14 @@ EditorState.prototype.KeyPress = function(event){
 		gameEngine.ChangeState("game");
 		console.log (JSON.stringify (level));
 	}
-	console.log (c);
+	// Buttons 0 ... 4 of the keyboard
 	if (c >= 48 && c <= 52){
 		this.currElem = event.keyCode - 48; 
 	}
 }
 
 EditorState.prototype.MouseClick = function(event){
+	// Add the block to the level if necessary
 	if (this.currElem != 0){
 		cell = getCell(gameEngine.mouseCursor);
 		console.log(gameEngine.mouseCursor);
@@ -203,7 +196,6 @@ EditorState.prototype.MouseClick = function(event){
 ///////////////////////////////////////////////////////////////////////////////
 GameState = function(){
 	this.viewport = new Viewport(gameEngine);
-
 }
 
 var speed = { 
@@ -212,8 +204,8 @@ var speed = {
 	};
 
 var heroStart = {
-		speed: {x:0, y: 0},
-		pos:{ x: 600, y: 400 }
+		speed : { x : 0, y : 0 },
+		pos : { x : 600, y : 400 }
 	};
 
 GameState.prototype = {
@@ -224,11 +216,6 @@ GameState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		gameEngine.ChangeState("editor");		
 	}
-}
-
-GameState.prototype.Init = function() {
-	that.hero = heroStart;
-	console.log (heroStart);
 }
 
 GameState.prototype.Update = function (modifier) {
@@ -268,6 +255,7 @@ GameState.prototype.Update = function (modifier) {
 	
 };
 
+// Convert screen coordinates into cell coordinates
 function getCell (pt){
 	var res = 
 	{
@@ -280,7 +268,7 @@ function getCell (pt){
 function hasCollision (level, cell){
 	res = 0;
 	if ((cell.x >= 0 && cell.x < NB_X_BLOC)
-	||(cell.y >= 0 && cell.y < NB_Y_BLOC))
+	&& (cell.y >= 0 && cell.y < NB_Y_BLOC))
 	{
 		res = level[cell.y][cell.x];
 	}
@@ -295,14 +283,15 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 	{
 		currBlock = blocs [i];
 
-		if (hasCollision (level, currBlock) != 0){
+		if (hasCollision (level, currBlock) != BLOCK.NONE){
 			// Block that can be destroyed
-			if (level[currBlock.y][currBlock.x] == 2){
-				level[currBlock.y][currBlock.x] = 0;
+			if (level[currBlock.y][currBlock.x] == BLOCK.DESTROYABLE){
+				level[currBlock.y][currBlock.x] = BLOCK.NONE;
 			}
-			else if (level[currBlock.y][currBlock.x] == 3){
+			// Block that kills
+			else if (level[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
 				console.log ("dead");
-				this.Init();
+				// this.Init();
 				gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
 
 			}
@@ -325,26 +314,22 @@ GameState.prototype.handleCollisions = function (level, modifer){
 	var newCellBR = getCell (newPosBottomRight);
 	// Vertical collisions
 
-	if ((hasCollision (level, {x:newCell.x, y:newCellBR.y}) != 0 || hasCollision (level, newCellBR) != 0) && newCellBR.y > this.hero.cell.y)
+	if ((hasCollision (level, {x:newCell.x, y:newCellBR.y}) != BLOCK.NONE || hasCollision (level, newCellBR) != BLOCK.NONE) && newCellBR.y > this.hero.cell.y)
 	{
 		this.handleVerticalCollisions({x:newCell.x, y:newCellBR.y}, newCellBR);
-		// if (hasCollision (level, {x:newCell.x, y:newCellBR.y}) != 0){
-		// 	if (level[newCellBR.y][newCell.x] == 2){
-		// 		level[newCellBR.y][newCell.x] = 0;
-		// 	}
-		// }
-		// else if (hasCollision (level, newCellBR) != 0 && level[newCellBR.y][newCell.x] == 2){
-		// 	level[newCellBR.y][newCellBR.x] = 0;
-		// }
+		
 		this.hero.speed.y = -0.65;
 	}
 	else
 	{
+		// /!\ This is crap
+		// todo -> make a better code, cleaner a more efficient. Same for vertical collisions
+
 		// Horizontal collisions
-		if ((hasCollision (level, {x:newCell.x, y: newCell.y})!=0 || hasCollision (level, {x:newCell.x, y: newCellBR.y})!=0) && newCell.x < this.hero.cell.x){
+		if ((hasCollision (level, {x:newCell.x, y: newCell.y}) != BLOCK.NONE || hasCollision (level, {x:newCell.x, y: newCellBR.y}) != BLOCK.NONE) && newCell.x < this.hero.cell.x){
 			this.hero.speed.x *= -1;
 		}
-		if ((hasCollision (level, {x:newCellBR.x, y: newCell.y})!=0 || hasCollision (level, {x:newCellBR.x, y: newCellBR.y})!=0) && newCellBR.x > this.hero.cell.x){
+		if ((hasCollision (level, {x:newCellBR.x, y: newCell.y}) != BLOCK.NONE || hasCollision (level, {x:newCellBR.x, y: newCellBR.y}) != BLOCK.NONE) && newCellBR.x > this.hero.cell.x){
 			this.hero.speed.x *= -1;
 		}	
 	}
@@ -356,15 +341,13 @@ GameState.prototype.Draw = function () {
 	g_Screen.drawRect (0,0, GAME_WIDTH, GAME_HEIGHT, "#303030");
 	this.DrawLevel(level);
 	this.DrawPlayer();
-	// Score
-	// g_Screen.drawText ("Goblins caught: " + this.monstersCaught, 32, 32, "rgb(0, 250, 250)", "24px Helvetica");
 };
 
 imageName = {
-		1:"bloc1",
-		2:"bloc2",
-		3:"bloc3",
-		4:"bloc4"
+		1 : "bloc1",
+		2 : "bloc2",
+		3 : "bloc3",
+		4 : "bloc4"
 	};
 
 function drawBlock(x,y, blocId){
@@ -389,13 +372,6 @@ GameState.prototype.DrawLevel = function (level) {
 				xOffset = x*BLOC_SIZE;
 				yOffset = y*BLOC_SIZE;
 				drawBlock (xOffset, yOffset, v);
-				// this.viewport.DrawSprite (
-				// 				imageName[v], 
-				// 				xOffset,
-				// 				yOffset,
-				// 				BLOC_SIZE,
-				// 				BLOC_SIZE
-				// 			);
 			}
 			
 		}

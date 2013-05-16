@@ -386,10 +386,12 @@ K2DEngine.prototype.MouseClick = function (event) {
 // Handles the Mouse move events, and delegates to the current state (if necessary)
 K2DEngine.prototype.MouseMove = function (event) {
 	// Update the cursor
+	// todo :  does not seem to handle correctly the mouse coords 
+	// when the page is scrolled
 	that.mouseCursor = 
 	{
-		x : event.clientX-document.documentElement.scrollLeft-gameEngine.canvas.offsetLeft,
-		y : event.clientY-document.documentElement.scrollTop-gameEngine.canvas.offsetTop
+		x : event.clientX-document.documentElement.scrollLeft-that.canvas.offsetLeft,
+		y : event.clientY-document.documentElement.scrollTop-that.canvas.offsetTop
 	};
 
 	// If the current states implements a method "HandleEvent", we call this method
