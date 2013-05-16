@@ -100,10 +100,29 @@ var level2 = [
 	[1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
 
+var level3 = [
+	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,5,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
+	[1,0,0,0,0,0,0,0,0,1,1,1,3,0,0,0,0,0,0,0],
+	[1,1,1,1,1,3,3,1,1,1,1,1,1,1,1,1,3,1,1,1]
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
+];
+
 var levels = [
 	level0,
 	level1,
-	level2
+	level2,
+	level3
 ]
 
 level = level1;
@@ -259,14 +278,15 @@ EditorState.prototype.MouseClick = function(event){
 ///////////////////////////////////////////////////////////////////////////////
 GameState = function(){
 	this.viewport = new Viewport(gameEngine);
-	this.currLevelIndex = 2;
+	this.currLevelIndex = 0;
 	this.InitGame();
 }
 
-var speed = { 
+var defaultSpeed = { 
 		x : 0, 
 		y : 0
 	};
+
 
 var heroStart = {
 		speed : { x : 0, y : 0 },
@@ -289,7 +309,6 @@ GameState.prototype.InitPlayer =function(){
 		for (var i = 0; i < NB_X_BLOC; ++i) {
 			if (this.currLevel[j][i] == BLOCK.PLAYER_START)
 			{
-				// console.log ({x:x, y:y});
 				this.hero.pos = {
 					x : i*BLOC_SIZE,
 					y : j*BLOC_SIZE
@@ -297,6 +316,7 @@ GameState.prototype.InitPlayer =function(){
 			}
 		}
 	}
+	this.hero.speed = {x:0,y:0};
 }
 
 GameState.prototype.KeyPress = function(event){
@@ -327,8 +347,12 @@ GameState.prototype.Update = function (modifier) {
 		this.hero.pos.x+this.hero.speed.x+1.5*PLAYER_SIZE > GAME_WIDTH
 	) {
 		// Reached the end of the level
-		this.hero.pos.x = 500;
 		gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.5, false) );
+		if (this.currLevelIndex < levels.length){
+			this.currLevelIndex++;
+			this.currLevel = levels[this.currLevelIndex];
+			this.InitGame();
+		}
 	}
 
 	this.handleCollisions(this.currLevel, modifier);
