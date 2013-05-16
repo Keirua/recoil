@@ -28,6 +28,16 @@ var BLOCK = {
 
 g_DataCache = new DataCache();
 
+Object.prototype.clone = function() {
+  var newObj = (this instanceof Array) ? [] : {};
+  for (i in this) {
+    if (i == 'clone') continue;
+    if (this[i] && typeof this[i] == "object") {
+      newObj[i] = this[i].clone();
+    } else newObj[i] = this[i]
+  } return newObj;
+};
+
 var level = [
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -282,7 +292,7 @@ GameInfo = function(){
 }
 
 GameInfo.prototype = {
-	currLevelIndex :0,
+	currLevelIndex : 1,
 	currDeath : 0,
 	totalDeath : 0
 }
@@ -381,8 +391,8 @@ GameState.prototype.Update = function (modifier) {
 		this.hero.pos.x+this.hero.speed.x+1.5*PLAYER_SIZE > GAME_WIDTH
 	) {
 		// Reached the end of the level
-		gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.5, false) );
-		if (this.currLevelIndex < levels.length){
+		// gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.5, false) );
+		if (g_gameInfo.currLevelIndex < levels.length){
 			g_gameInfo.currLevelIndex++;
 			this.currLevel = levels[g_gameInfo.currLevelIndex];
 			this.InitGame();
@@ -447,8 +457,6 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 			// Block that kills
 			else if (level[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
 				this.die ();
-				// console.log ("dead");
-				// this.InitGame();
 				gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
 			}
 		}
