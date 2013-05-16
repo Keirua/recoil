@@ -48,13 +48,13 @@ g_DataCache.queue = [
 g_MouseCursor = {};
 
 // Handles the mouse events
-document.onmousemove = function (event){
-	g_MouseCursor = 
-	{
-		x : event.clientX-document.documentElement.scrollLeft-gameEngine.canvas.offsetLeft,
-		y : event.clientY-document.documentElement.scrollTop-gameEngine.canvas.offsetTop
-	};
-}
+// document.onmousemove = function (event){
+// 	g_MouseCursor = 
+// 	{
+// 		x : event.clientX-document.documentElement.scrollLeft-gameEngine.canvas.offsetLeft,
+// 		y : event.clientY-document.documentElement.scrollTop-gameEngine.canvas.offsetTop
+// 	};
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Menu state
@@ -96,7 +96,7 @@ MenuState.prototype.Draw = function(){
 	}
 }
 
-MenuState.prototype.HandleEvent = function(event){
+MenuState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		if (this.activeItem == 0){
 			gameEngine.ChangeState("game");
@@ -169,13 +169,14 @@ EditorState.prototype.Update = function (modifier) {
 
 EditorState.prototype.Draw = function (modifier) {
 	gameEngine.states['game'].DrawLevel(level);
+	//Displays a potential future block if necessary
 	if (this.currElem != 0){
-		cell = getCell(g_MouseCursor);
+		cell = getCell(gameEngine.mouseCursor);
 		drawBlock(cell.x*BLOC_SIZE, cell.y*BLOC_SIZE, this.currElem);
 	}
 }
 
-EditorState.prototype.HandleEvent = function(event){
+EditorState.prototype.KeyPress = function(event){
 	var c = event.keyCode;
 
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
@@ -191,8 +192,8 @@ EditorState.prototype.HandleEvent = function(event){
 
 EditorState.prototype.MouseClick = function(event){
 	if (this.currElem != 0){
-		cell = getCell(g_MouseCursor);
-
+		cell = getCell(gameEngine.mouseCursor);
+		console.log(gameEngine.mouseCursor);
 		level[cell.y][cell.x] = this.currElem;
 	}
 }
@@ -202,6 +203,7 @@ EditorState.prototype.MouseClick = function(event){
 ///////////////////////////////////////////////////////////////////////////////
 GameState = function(){
 	this.viewport = new Viewport(gameEngine);
+
 }
 
 var speed = { 
@@ -215,18 +217,18 @@ var heroStart = {
 	};
 
 GameState.prototype = {
-	hero : heroStart
+	hero : heroStart	
 }
 
-GameState.prototype.HandleEvent = function(event){
-	console.log ("yeah !");
+GameState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		gameEngine.ChangeState("editor");		
 	}
 }
 
 GameState.prototype.Init = function() {
-	this.hero = heroStart;
+	that.hero = heroStart;
+	console.log (heroStart);
 }
 
 GameState.prototype.Update = function (modifier) {
@@ -299,7 +301,8 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 				level[currBlock.y][currBlock.x] = 0;
 			}
 			else if (level[currBlock.y][currBlock.x] == 3){
-				// game.Init();
+				console.log ("dead");
+				this.Init();
 				gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
 
 			}

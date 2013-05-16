@@ -256,8 +256,6 @@ Timer.prototype.ChronoString = function ()
 	return str_minutes + ":" + nb_s.toFixed(2); // 2 digits for the milliseconds
 }
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Engine class, the entry point of the application
 ///////////////////////////////////////////////////////////////////////////////
@@ -275,6 +273,8 @@ K2DEngine = function(params){
 	this.context = this.canvas.getContext("2d");
 	
 	this.screen = new Screen (this);
+
+	this.mouseCursor = {x:0, y:0};
 }
 
 K2DEngine.prototype = {
@@ -285,6 +285,7 @@ K2DEngine.prototype = {
 	effects : [],
 	canvas : {},
 	context : {},
+	mouseCursor : {x:0, y:0}
 }
 
 K2DEngine.prototype.AddState = function (name, state){
@@ -312,6 +313,7 @@ K2DEngine.prototype.Init = function (options){
 	
 	window.onkeydown = that.KeyPress;
 	window.onmousedown = that.MouseClick;
+	window.onmousemove = that.MouseMove;
 	
 	// Initializes the game
 	prevDate = Date.now();
@@ -364,20 +366,37 @@ K2DEngine.prototype.KeyPress = function (event) {
 	// If the current states implements a method "HandleEvent", we call this method
 	if (that.currState != "loading"){
 		var st = that.states[that.currState];
-		if (st.HandleEvent)
+		if (st.KeyPress)
 		{
-			st.HandleEvent(event);
+			st.KeyPress(event);
 		}
 	}
 }
 
-// Handles the keypress events, and delegates to the current state (if necessary)
+// Handles the mouse click events, and delegates to the current state (if necessary)
 K2DEngine.prototype.MouseClick = function (event) {
 	// If the current states implements a method "HandleEvent", we call this method
 	var st = that.states[that.currState];
 	if (st.MouseClick)
 	{
 		st.MouseClick(event);
+	}
+}
+
+// Handles the Mouse move events, and delegates to the current state (if necessary)
+K2DEngine.prototype.MouseMove = function (event) {
+	// Update the cursor
+	that.mouseCursor = 
+	{
+		x : event.clientX-document.documentElement.scrollLeft-gameEngine.canvas.offsetLeft,
+		y : event.clientY-document.documentElement.scrollTop-gameEngine.canvas.offsetTop
+	};
+
+	// If the current states implements a method "HandleEvent", we call this method
+	var st = that.states[that.currState];
+	if (st.MouseMove)
+	{
+		st.MouseMove(event);
 	}
 }
 
