@@ -18,7 +18,8 @@ var BLOCK = {
 	WALL : 1,
 	DESTROYABLE : 2, 
 	EXPLODE : 3,
-	ROCKET : 4 			// There might be 2 kinds of rockets 
+	ROCKET : 4, 			// There might be 2 kinds of rockets 
+	PLAYER_START : 5 			// There might be 2 kinds of rockets 
 };
 
 //Create a sound 
@@ -37,13 +38,76 @@ var level = [
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,1],
-	[1,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 	[1,0,0,0,0,0,0,0,4,3,2,2,0,0,0,0,0,0,0,0],
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
+
+var level0 = [
+	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1]
+];
+
+var level1 = [
+	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,1,1,1,1,1,2,2,0,2,2,2,0,2,2,2,2,2,2,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1]
+];
+
+var level2 = [
+	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+	[1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1],
+	[1,5,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+	[1,0,0,0,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1],
+	[1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+var levels = [
+	level0,
+	level1,
+	level2
+]
+
+level = level1;
+
 
 g_DataCache.queue = [
 	"bloc1",
@@ -96,6 +160,7 @@ MenuState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		if (this.activeItem == 0){
 			gameEngine.ChangeState("game");
+
 			gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.3, false) );
 		}
 		else if (this.activeItem == 2)
@@ -183,12 +248,10 @@ EditorState.prototype.KeyPress = function(event){
 }
 
 EditorState.prototype.MouseClick = function(event){
-	// Add the block to the level if necessary
-	if (this.currElem != 0){
-		cell = getCell(gameEngine.mouseCursor);
-		console.log(gameEngine.mouseCursor);
-		level[cell.y][cell.x] = this.currElem;
-	}
+	// Add the block to the level if necessary	
+	cell = getCell(gameEngine.mouseCursor);
+	console.log(gameEngine.mouseCursor);
+	level[cell.y][cell.x] = this.currElem;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -196,6 +259,8 @@ EditorState.prototype.MouseClick = function(event){
 ///////////////////////////////////////////////////////////////////////////////
 GameState = function(){
 	this.viewport = new Viewport(gameEngine);
+	this.currLevelIndex = 2;
+	this.InitGame();
 }
 
 var speed = { 
@@ -209,7 +274,29 @@ var heroStart = {
 	};
 
 GameState.prototype = {
-	hero : heroStart	
+	hero : heroStart,
+	currLevel : [], // affected later based on currLevelIndex
+	currLevelIndex : 0
+}
+
+GameState.prototype.InitGame =function(){
+	this.currLevel = levels[this.currLevelIndex];
+	this.InitPlayer();
+}
+
+GameState.prototype.InitPlayer =function(){
+	for (var j = 0; j < NB_Y_BLOC; ++j) {
+		for (var i = 0; i < NB_X_BLOC; ++i) {
+			if (this.currLevel[j][i] == BLOCK.PLAYER_START)
+			{
+				// console.log ({x:x, y:y});
+				this.hero.pos = {
+					x : i*BLOC_SIZE,
+					y : j*BLOC_SIZE
+				}
+			}
+		}
+	}
 }
 
 GameState.prototype.KeyPress = function(event){
@@ -244,7 +331,7 @@ GameState.prototype.Update = function (modifier) {
 		gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.5, false) );
 	}
 
-	this.handleCollisions(level, modifier);
+	this.handleCollisions(this.currLevel, modifier);
 
 	this.hero.pos.x += this.hero.speed.x;
 	this.hero.pos.y += this.hero.speed.y;
@@ -291,9 +378,8 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 			// Block that kills
 			else if (level[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
 				console.log ("dead");
-				// this.Init();
+				// this.InitGame();
 				gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
-
 			}
 		}
 	}
@@ -339,7 +425,7 @@ GameState.prototype.handleCollisions = function (level, modifer){
 // Draw everything
 GameState.prototype.Draw = function () {
 	g_Screen.drawRect (0,0, GAME_WIDTH, GAME_HEIGHT, "#303030");
-	this.DrawLevel(level);
+	this.DrawLevel(this.currLevel);
 	this.DrawPlayer();
 };
 
@@ -393,11 +479,6 @@ GameState.prototype.DrawLevel = function (level) {
 
 GameState.prototype.DrawPlayer = function () {
 	g_Screen.drawRect (this.hero.pos.x, this.hero.pos.y, PLAYER_SIZE, PLAYER_SIZE, "white");
-};
-
-// Reset the game when the player catches a monster
-GameState.prototype.Reset = function () {
-	this.hero = heroStart;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

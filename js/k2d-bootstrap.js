@@ -313,11 +313,10 @@ K2DEngine.prototype.Init = function (options){
 	
 	window.onkeydown = that.KeyPress;
 	window.onmousedown = that.MouseClick;
-	window.onmousemove = that.MouseMove;
+	// window.onmousemove = that.MouseMove;
 	
 	// Initializes the game
 	prevDate = Date.now();
-	gameState.Reset();
 	
 	this.datacache.load();
 	
@@ -330,8 +329,12 @@ K2DEngine.prototype.Update = function (modifier){
 		if (this.datacache.done() == true)
 			this.currState = this.stateAfterLoading;
 	}
-	else
-		this.states[this.currState].Update(modifier);
+	else{
+		var st = this.states[this.currState];
+		if (st.Update)
+			st.Update(modifier);
+	}
+		
 		
 	this.UpdateEffects(modifier);
 }
@@ -377,7 +380,7 @@ K2DEngine.prototype.KeyPress = function (event) {
 K2DEngine.prototype.MouseClick = function (event) {
 	// If the current states implements a method "HandleEvent", we call this method
 	var st = that.states[that.currState];
-	if (st.MouseClick)
+	if (st.MouseClick != null)
 	{
 		st.MouseClick(event);
 	}
@@ -396,7 +399,7 @@ K2DEngine.prototype.MouseMove = function (event) {
 
 	// If the current states implements a method "HandleEvent", we call this method
 	var st = that.states[that.currState];
-	if (st.MouseMove)
+	if (st.MouseMove != null)
 	{
 		st.MouseMove(event);
 	}
