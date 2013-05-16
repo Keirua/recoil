@@ -308,7 +308,7 @@ DeathState = function(){
 
 DeathState.prototype.Draw = function (modifier) {
 	g_Screen.drawCenterText ("Death", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
-	g_Screen.drawCenterText (g_gameInfo.currDeath, GAME_WIDTH/2, GAME_HEIGHT/2, "#eee", "18pt Calibri");
+	g_Screen.drawCenterText ('x ' + g_gameInfo.currDeath, GAME_WIDTH/2, GAME_HEIGHT/2, "#eee", "18pt Calibri");
 }
 
 DeathState.prototype.KeyPress = function(event){
@@ -345,6 +345,8 @@ GameState.prototype = {
 
 GameState.prototype.InitGame =function(){
 	this.currLevel = levels[g_gameInfo.currLevelIndex];
+	
+	// this.currLevel[1][1] = 3;
 	this.InitPlayer();
 }
 
@@ -399,7 +401,7 @@ GameState.prototype.Update = function (modifier) {
 		}
 	}
 
-	this.handleCollisions(this.currLevel, modifier);
+	this.handleCollisions(modifier);
 
 	if (this.hero.pos.y > GAME_HEIGHT){
 		this.die();
@@ -463,7 +465,7 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 	}
 }
 
-GameState.prototype.handleCollisions = function (level, modifer){
+GameState.prototype.handleCollisions = function (modifer){
 	this.hero.cell = getCell (this.hero.pos);
 	var newPos = 
 	{
@@ -477,7 +479,7 @@ GameState.prototype.handleCollisions = function (level, modifer){
 	var newCell = getCell (newPos);
 	var newCellBR = getCell (newPosBottomRight);
 	// Vertical collisions
-	if ((hasCollision (level, {x:newCell.x, y:newCellBR.y}) != BLOCK.NONE || hasCollision (level, newCellBR) != BLOCK.NONE) && newCellBR.y > this.hero.cell.y)
+	if ((hasCollision (this.currLevel, {x:newCell.x, y:newCellBR.y}) != BLOCK.NONE || hasCollision (this.currLevel, newCellBR) != BLOCK.NONE) && newCellBR.y > this.hero.cell.y)
 	{
 		this.handleVerticalCollisions({x:newCell.x, y:newCellBR.y}, newCellBR);
 		
@@ -489,10 +491,10 @@ GameState.prototype.handleCollisions = function (level, modifer){
 		// todo -> make a better code, cleaner a more efficient. Same for vertical collisions
 
 		// Horizontal collisions
-		if ((hasCollision (level, {x:newCell.x, y: newCell.y}) != BLOCK.NONE || hasCollision (level, {x:newCell.x, y: newCellBR.y}) != BLOCK.NONE) && newCell.x < this.hero.cell.x){
+		if ((hasCollision (this.currLevel, {x:newCell.x, y: newCell.y}) != BLOCK.NONE || hasCollision (this.currLevel, {x:newCell.x, y: newCellBR.y}) != BLOCK.NONE) && newCell.x < this.hero.cell.x){
 			this.hero.speed.x *= -1;
 		}
-		if ((hasCollision (level, {x:newCellBR.x, y: newCell.y}) != BLOCK.NONE || hasCollision (level, {x:newCellBR.x, y: newCellBR.y}) != BLOCK.NONE) && newCellBR.x > this.hero.cell.x){
+		if ((hasCollision (this.currLevel, {x:newCellBR.x, y: newCell.y}) != BLOCK.NONE || hasCollision (this.currLevel, {x:newCellBR.x, y: newCellBR.y}) != BLOCK.NONE) && newCellBR.x > this.hero.cell.x){
 			this.hero.speed.x *= -1;
 		}	
 	}
