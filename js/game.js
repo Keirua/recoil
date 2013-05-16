@@ -45,7 +45,7 @@ var level = [
 	[1,0,0,0,0,0,0,0,4,3,2,2,0,0,0,0,0,0,0,0],
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
-
+// See https://www.youtube.com/watch?v=NQaCpD5w8vQ for other levels
 var level0 = [
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -273,12 +273,47 @@ EditorState.prototype.MouseClick = function(event){
 	level[cell.y][cell.x] = this.currElem;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Game object
+///////////////////////////////////////////////////////////////////////////////
+GameInfo = function(){
+
+}
+
+GameInfo.prototype = {
+	currLevelIndex :0,
+	currDeath : 0,
+	totalDeath : 0
+}
+
+g_gameInfo = new GameInfo();
+
+///////////////////////////////////////////////////////////////////////////////
+// Death state
+///////////////////////////////////////////////////////////////////////////////
+
+DeathState = function(){
+}
+
+DeathState.prototype.Draw = function (modifier) {
+	g_Screen.drawCenterText ("Death", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
+	g_Screen.drawCenterText (g_gameInfo.currDeath, GAME_WIDTH/2, GAME_HEIGHT/2, "#eee", "18pt Calibri");
+}
+
+DeathState.prototype.KeyPress = function(event){
+	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
+		gameEngine.states['game'].InitGame();
+		gameEngine.ChangeState("game");
+	}
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Game state
 ///////////////////////////////////////////////////////////////////////////////
 GameState = function(){
 	this.viewport = new Viewport(gameEngine);
-	this.currLevelIndex = 0;
 	this.InitGame();
 }
 
@@ -296,11 +331,10 @@ var heroStart = {
 GameState.prototype = {
 	hero : heroStart,
 	currLevel : [], // affected later based on currLevelIndex
-	currLevelIndex : 0
 }
 
 GameState.prototype.InitGame =function(){
-	this.currLevel = levels[this.currLevelIndex];
+	this.currLevel = levels[g_gameInfo.currLevelIndex];
 	this.InitPlayer();
 }
 
@@ -349,13 +383,17 @@ GameState.prototype.Update = function (modifier) {
 		// Reached the end of the level
 		gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.5, false) );
 		if (this.currLevelIndex < levels.length){
-			this.currLevelIndex++;
-			this.currLevel = levels[this.currLevelIndex];
+			g_gameInfo.currLevelIndex++;
+			this.currLevel = levels[g_gameInfo.currLevelIndex];
 			this.InitGame();
 		}
 	}
 
 	this.handleCollisions(this.currLevel, modifier);
+
+	if (this.hero.pos.y > GAME_HEIGHT){
+		this.die();
+	}
 
 	this.hero.pos.x += this.hero.speed.x;
 	this.hero.pos.y += this.hero.speed.y;
@@ -387,6 +425,13 @@ function hasCollision (level, cell){
 	return res;
 }
 
+GameState.prototype.die  = function(){
+	// console.log ("I died :/");
+	gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
+	gameEngine.ChangeState("death");
+	g_gameInfo.currDeath++;
+}
+
 GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 	blocs = [block1, block2];
 
@@ -401,7 +446,8 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 			}
 			// Block that kills
 			else if (level[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
-				console.log ("dead");
+				this.die ();
+				// console.log ("dead");
 				// this.InitGame();
 				gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
 			}
@@ -423,7 +469,6 @@ GameState.prototype.handleCollisions = function (level, modifer){
 	var newCell = getCell (newPos);
 	var newCellBR = getCell (newPosBottomRight);
 	// Vertical collisions
-
 	if ((hasCollision (level, {x:newCell.x, y:newCellBR.y}) != BLOCK.NONE || hasCollision (level, newCellBR) != BLOCK.NONE) && newCellBR.y > this.hero.cell.y)
 	{
 		this.handleVerticalCollisions({x:newCell.x, y:newCellBR.y}, newCellBR);
@@ -523,13 +568,15 @@ var menuState = new MenuState();
 var gameState = new GameState();
 var creditState = new CreditState();
 var editorState = new EditorState();
+var deathState = new DeathState();
 
 gameEngine.states = 
 	{
-		menu:menuState,
-		game:gameState,
-		credit:creditState,
-		editor:editorState
+		menu  : menuState,
+		game  : gameState,
+		credit: creditState,
+		editor: editorState,
+		death : deathState
 	};
 
 gameEngine.Init();
