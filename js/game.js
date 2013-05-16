@@ -11,7 +11,9 @@ var PLAYER_SIZE = 8;
 var SPEED_X =  2; // movement in pixels per second
 var MAX_SPEED_X =  0.5;
 var G = 1;
+var MAX_TRAIL_QUEUE = 10;
 
+var TIME_BETWEEN_TRAIL = 50; // 50ms between 2 additions of blocks
 
 var BLOCK = {
 	NONE : 0,
@@ -341,6 +343,8 @@ var heroStart = {
 GameState.prototype = {
 	hero : heroStart,
 	currLevel : [], // affected later based on currLevelIndex
+	trailQueue : [],
+	trailTimer : {}
 }
 
 GameState.prototype.InitGame =function(){
@@ -348,6 +352,8 @@ GameState.prototype.InitGame =function(){
 	
 	// this.currLevel[1][1] = 3;
 	this.InitPlayer();
+	this.trailTimer = new Timer ();
+	this.trailTimer.Start ();
 }
 
 GameState.prototype.InitPlayer =function(){
@@ -410,6 +416,18 @@ GameState.prototype.Update = function (modifier) {
 	this.hero.pos.x += this.hero.speed.x;
 	this.hero.pos.y += this.hero.speed.y;
 
+
+	// if (this.trailTimer.IsElapsed(TIME_BETWEEN_TRAIL)){
+	// 	this.trailTimer.Start ();
+	// 	this.trailQueue.push({x:this.hero.pos.x, y:this.hero.pos.y});
+	// 	if (this.trailQueue.length > MAX_TRAIL_QUEUE){
+	// 		this.trailQueue.shift ();
+	// 		console.log (this.trailTimer.ChronoString());
+	// 		console.log (this.trailQueue);
+	// 	}
+	// }
+	
+		
 	// Are they touching?
 	// 	bullet_sound.play();
 	// 	gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.3, false) );
