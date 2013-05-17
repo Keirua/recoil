@@ -268,7 +268,7 @@ EditorState.prototype.KeyPress = function(event){
 	var c = event.keyCode;
 
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
-		gameEngine.states['game'].Init();
+		// gameEngine.states['game'].Init();
 		gameEngine.ChangeState("game");
 		console.log (JSON.stringify (level));
 	}
@@ -348,7 +348,8 @@ GameState.prototype = {
 }
 
 GameState.prototype.InitGame =function(){
-	this.currLevel = levels[g_gameInfo.currLevelIndex];
+	// this.currLevel = levels[g_gameInfo.currLevelIndex];
+	this.currLevel = levels[g_gameInfo.currLevelIndex].clone();
 	
 	// this.currLevel[1][1] = 3;
 	this.InitPlayer();
@@ -471,11 +472,11 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 
 		if (hasCollision (level, currBlock) != BLOCK.NONE){
 			// Block that can be destroyed
-			if (level[currBlock.y][currBlock.x] == BLOCK.DESTROYABLE){
-				level[currBlock.y][currBlock.x] = BLOCK.NONE;
+			if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.DESTROYABLE){
+				this.currLevel[currBlock.y][currBlock.x] = BLOCK.NONE;
 			}
 			// Block that kills
-			else if (level[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
+			else if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
 				this.die ();
 				gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
 			}

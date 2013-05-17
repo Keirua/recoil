@@ -313,7 +313,7 @@ K2DEngine.prototype.Init = function (options){
 	
 	window.onkeydown = that.KeyPress;
 	window.onmousedown = that.MouseClick;
-	// window.onmousemove = that.MouseMove;
+	window.onmousemove = that.MouseMove;
 	
 	// Initializes the game
 	prevDate = Date.now();
