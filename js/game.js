@@ -296,7 +296,7 @@ GameInfo = function(){
 }
 
 GameInfo.prototype = {
-	currLevelIndex : 0,
+	currLevelIndex : 3,
 	currDeath : 0,
 	totalDeath : 0,
 	levelTimer: {}
@@ -312,6 +312,12 @@ DeathState = function(){
 }
 
 DeathState.prototype.Draw = function (modifier) {
+	gameEngine.screen.context.save ();
+	gameEngine.screen.context.globalAlpha = 0.3;
+
+	gameEngine.states['game'].DrawLevel (gameEngine.states['game'].currLevel);
+	gameEngine.screen.context.restore ();
+
 	g_Screen.drawCenterText ("Death", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
 	g_Screen.drawCenterText ('x ' + g_gameInfo.currDeath, GAME_WIDTH/2, GAME_HEIGHT/2, "#eee", "18pt Calibri");
 }
@@ -479,8 +485,8 @@ function hasCollision (level, cell){
 
 GameState.prototype.die  = function(){
 	gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
-	gameEngine.ChangeState("death");
 	g_gameInfo.currDeath++;
+	gameEngine.ChangeState("death");
 }
 
 GameState.prototype.handleVerticalCollisions  = function(block1, block2){
@@ -500,6 +506,8 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 				this.die ();
 				gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
 			}
+
+			break;
 		}
 	}
 }

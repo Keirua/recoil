@@ -30,14 +30,20 @@ Screen = function (engine){
 }
 
 Screen.prototype.drawRect = function (px, py, sizex, sizey, col, alpha){
-	if (alpha == undefined) alpha = 1;
-	this.context.globalAlpha = alpha;
+	if (alpha != undefined)
+	{
+		this.context.save ();
+		this.context.globalAlpha = alpha;
+	}
 	this.context.fillStyle = col;
 	this.context.beginPath();
 	this.context.rect(px, py, sizex, sizey);
 	this.context.closePath();
 	this.context.fill();
-	this.context.globalAlpha = 1;
+	if (alpha != undefined)
+	{
+			this.context.restore ();
+	}
 }
 
 Screen.prototype.drawText = function (text, x, y, color, font){
@@ -390,7 +396,7 @@ K2DEngine.prototype.KeyPress = function (event) {
 K2DEngine.prototype.MouseClick = function (event) {
 	// If the current states implements a method "HandleEvent", we call this method
 	var st = that.states[that.currState];
-	if (st.MouseClick != null)
+	if (st.MouseClick != undefined)
 	{
 		st.MouseClick(event);
 	}
@@ -409,7 +415,7 @@ K2DEngine.prototype.MouseMove = function (event) {
 
 	// If the current states implements a method "HandleEvent", we call this method
 	var st = that.states[that.currState];
-	if (st.MouseMove != null)
+	if (st.MouseMove != undefined)
 	{
 		st.MouseMove(event);
 	}
