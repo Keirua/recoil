@@ -375,7 +375,8 @@ var ExplosionEffect = function (color, duration, pos, nbParticles){
 			speed : {
 				x : Math.random ()-0.5,
 				y : -Math.random ()*0.5
-			}
+			},
+			size : 1+(Math.random ()*(5-1))
 		});
 	}
 
@@ -416,7 +417,7 @@ var ExplosionEffect = function (color, duration, pos, nbParticles){
 
 		for (var i = 0; i < this.nbParticles; ++i){
 			var currParticle = this.particles[i];
-			ctx.fillRect(currParticle.pos.x,currParticle.pos.y,4,4);
+			ctx.fillRect(currParticle.pos.x,currParticle.pos.y,currParticle.size,currParticle.size);
 		}
 
 		ctx.restore ();
@@ -671,7 +672,7 @@ GameState.prototype.die  = function(){
 	
 	g_gameInfo.currDeath++;
 	gameEngine.ChangeState("death");
-	dog_laugh.play();
+	// dog_laugh.play();
 }
 
 GameState.prototype.handleVerticalCollisions  = function(block1, block2){
@@ -690,7 +691,7 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 			// Block that kills
 			else if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
 				this.die ();
-				sound_explosion.play ();
+				// sound_explosion.play ();
 				gameEngine.effects.push ( new ExplosionEffect ("rgb(255, 40, 40)", 1, this.hero.pos, 50) );
 			}
 
@@ -717,7 +718,7 @@ GameState.prototype.handleCollisions = function (){
 	{
 		this.handleVerticalCollisions({x:newCell.x, y:newCellBR.y}, newCellBR);
 		this.hero.speed.y = -0.65;
-		sound_bounce.play();
+		// sound_bounce.play();
 	}
 	else
 	{
