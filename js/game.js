@@ -30,7 +30,7 @@ var BLOCK = {
 // /!\ Does not work in firefox
 // http://crackberry.com//ringtone/duck-hunt-dog-laugh-annoying-dog
 var dog_laugh = new Audio("audio/duck-hunt-dog-laugh-ringtone.mp3");
-dog_laugh.loop = true;
+dog_laugh.loop = false;
 
 g_DataCache = new DataCache();
 
@@ -515,13 +515,15 @@ GameState.prototype.InitGame =function(){
 }
 
 GameState.prototype.InitPlayer =function(){
+	var midPos =  BLOC_SIZE/2-PLAYER_SIZE/2;
+
 	for (var j = 0; j < NB_Y_BLOC; ++j) {
 		for (var i = 0; i < NB_X_BLOC; ++i) {
 			if (this.currLevel[j][i] == BLOCK.PLAYER_START)
 			{
 				this.hero.pos = {
-					x : i*BLOC_SIZE,
-					y : j*BLOC_SIZE
+					x : i*BLOC_SIZE+midPos,
+					y : j*BLOC_SIZE+midPos
 				}
 			}
 		}
