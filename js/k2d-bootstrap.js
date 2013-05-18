@@ -129,17 +129,23 @@ var SpriteSheet = function (nbStates, nbImagesPerAnimation, stepDuration, textur
 	this.TimerStart = Date.now();
 }
 
-SpriteSheet.prototype.Draw  = function(datacache, viewport, x, y){
+SpriteSheet.prototype.Draw  = function(datacache, viewport, x, y, sX, sY){
 	var image = datacache.getImage(this.textureName);
 	var sizeX = image.width/this.nbImages;
 	var sizeY = image.height/this.nbStates;
+	var displaySizeX = (sX == undefined) ? sizeX : sX;
+	var displaySizeY = (sY == undefined) ? sizeY : sY;
+	// if (sX != undefined)
+	// 	sizeX = sX;
+	// if (sY != undefined)
+	// 	sizeY = sY;
 
 	// 1st parameter : the image to display
 	// the next 2 : position in the image to start displaying from
 	// the next 2 : number of pixels to display
 	// the next 2 : position where to draw in the canvas
 	// the last 2 : size of the image in the canvas
-	viewport.context.drawImage(image, this.currAnimation*sizeX, this.currState*sizeY, sizeX, sizeY, x-viewport.x, y-viewport.y, sizeX, sizeY);
+	viewport.context.drawImage(image, this.currAnimation*sizeX, this.currState*sizeY, sizeX, sizeY, x-viewport.x, y-viewport.y, displaySizeX, displaySizeY);
 }
 
 SpriteSheet.prototype.SetAnimated = function(b){
