@@ -202,13 +202,13 @@ MenuState.prototype.KeyPress = function(event){
 		}
 	}
 	if (event.keyCode == KB_UP) { // Player holding up
-		bullet_sound.play();
+		// bullet_sound.play();
 		this.activeItem = (this.activeItem-1);
 		if (this.activeItem < 0)
 			this.activeItem = this.menuItems.length-1;
 	}
 	if (event.keyCode == KB_DOWN) { // Player holding down
-		bullet_sound.play();
+		// bullet_sound.play();
 		this.activeItem = (this.activeItem + 1) % (this.menuItems.length);
 	}
 }
@@ -320,6 +320,25 @@ DeathState.prototype.KeyPress = function(event){
 	}
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Death state
+///////////////////////////////////////////////////////////////////////////////
+
+EndOfLevelState = function(){
+}
+
+EndOfLevelState.prototype.Draw = function (modifier) {
+	g_Screen.drawCenterText ("End of level \o//", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
+	// g_Screen.drawCenterText ('x ' + g_gameInfo.currDeath, GAME_WIDTH/2, GAME_HEIGHT/2, "#eee", "18pt Calibri");
+}
+
+EndOfLevelState.prototype.KeyPress = function(event){
+	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
+		gameEngine.states['game'].InitGame();
+		gameEngine.ChangeState("game");
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Game state
