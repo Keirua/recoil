@@ -335,6 +335,8 @@ EndOfLevelState.prototype.Draw = function (modifier) {
 
 EndOfLevelState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
+		g_gameInfo.currLevelIndex++;
+		// this.InitGame();
 		gameEngine.states['game'].InitGame();
 		gameEngine.ChangeState("game");
 	}
@@ -368,12 +370,13 @@ GameState.prototype = {
 
 GameState.prototype.InitGame =function(){
 	// this.currLevel = levels[g_gameInfo.currLevelIndex];
+	console.log (g_gameInfo.currLevelIndex);
 	this.currLevel = levels[g_gameInfo.currLevelIndex].clone();
 	
-	// this.currLevel[1][1] = 3;
 	this.InitPlayer();
 	this.trailTimer = new Timer ();
 	this.trailTimer.Start ();
+	this.trailQueue = [];
 }
 
 GameState.prototype.InitPlayer =function(){
@@ -421,9 +424,7 @@ GameState.prototype.Update = function (modifier) {
 		// Reached the end of the level
 		// gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.5, false) );
 		if (g_gameInfo.currLevelIndex < levels.length){
-			g_gameInfo.currLevelIndex++;
-			this.currLevel = levels[g_gameInfo.currLevelIndex];
-			this.InitGame();
+			gameEngine.ChangeState ("endoflevel");
 		}
 	}
 
@@ -631,6 +632,7 @@ var gameState = new GameState();
 var creditState = new CreditState();
 var editorState = new EditorState();
 var deathState = new DeathState();
+var endOfLevelState = new EndOfLevelState();
 
 gameEngine.states = 
 	{
@@ -638,7 +640,8 @@ gameEngine.states =
 		game  : gameState,
 		credit: creditState,
 		editor: editorState,
-		death : deathState
+		death : deathState,
+		endoflevel : endOfLevelState
 	};
 
 gameEngine.Init();
