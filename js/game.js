@@ -28,7 +28,9 @@ var BLOCK = {
 
 //Create a sound 
 // /!\ Does not work in firefox
-// var bullet_sound = new Audio("sound/bullet.mp3");
+// http://crackberry.com//ringtone/duck-hunt-dog-laugh-annoying-dog
+var dog_laugh = new Audio("audio/duck-hunt-dog-laugh-ringtone.mp3");
+dog_laugh.loop = true;
 
 g_DataCache = new DataCache();
 
@@ -341,6 +343,8 @@ DeathState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		gameEngine.states['game'].InitGame();
 		gameEngine.ChangeState("game");
+		dog_laugh.pause();
+		dog_laugh.currentTime = 0;
 	}
 }
 
@@ -605,6 +609,7 @@ GameState.prototype.die  = function(){
 	
 	g_gameInfo.currDeath++;
 	gameEngine.ChangeState("death");
+	dog_laugh.play();
 }
 
 GameState.prototype.handleVerticalCollisions  = function(block1, block2){
