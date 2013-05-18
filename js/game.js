@@ -331,6 +331,60 @@ DeathState.prototype.KeyPress = function(event){
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// ExplosionEffect: handles how to display the explosion effect when ones die
+///////////////////////////////////////////////////////////////////////////////
+var ExplosionEffect = function (color, duration, pos, nbParticles){
+	this.color = color;
+	this.duration = duration;
+	this.elapsed = 0;
+	
+	this.done = false;
+
+	this.particles = [];
+	this.nbParticles = nbParticles;
+	for (var i = 0; i < nbParticles; ++i){
+		this.particles.push ({
+			pos : {
+				x: pos.x,
+				y: pos.y
+			},
+			speed : {
+				x : Math.random ()-0.5,
+				y : Math.random ()-0.5
+			}
+		});
+	}
+	console.log (this.particles);
+
+	this.Update = function (dt){
+		this.elapsed += dt;
+		if (this.elapsed > this.duration){
+			this.done = true;
+		}
+
+		for (var i = 0; i < this.nbParticles; ++i){
+			var currParticle = this.particles[i];
+			currParticle.pos.x += currParticle.speed.x * dt * 200;
+			currParticle.pos.y += currParticle.speed.y * dt * 200;
+			currParticle.speed.y += G * dt;
+		}
+	}
+	
+	this.Draw = function (ctx){
+		ctx.save ();
+		ctx.globalAlpha = 1-this.elapsed/this.duration;
+		ctx.fillStyle = this.color;
+
+		for (var i = 0; i < this.nbParticles; ++i){
+			var currParticle = this.particles[i];
+			ctx.fillRect(currParticle.pos.x,currParticle.pos.y,4,4);
+		}
+
+		ctx.restore ();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Death state
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -485,6 +539,7 @@ function hasCollision (level, cell){
 
 GameState.prototype.die  = function(){
 	gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
+	
 	g_gameInfo.currDeath++;
 	gameEngine.ChangeState("death");
 }
@@ -504,7 +559,7 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 			// Block that kills
 			else if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
 				this.die ();
-				gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
+				gameEngine.effects.push ( new ExplosionEffect ("rgb(255, 40, 40)", 2, this.hero.pos, 50) );
 			}
 
 			break;
