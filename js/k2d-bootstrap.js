@@ -29,12 +29,15 @@ Screen = function (engine){
 	this.context = engine.context;
 }
 
-Screen.prototype.drawRect = function (px, py, sizex, sizey, col){
+Screen.prototype.drawRect = function (px, py, sizex, sizey, col, alpha){
+	if (alpha == undefined) alpha = 1;
+	this.context.globalAlpha = alpha;
 	this.context.fillStyle = col;
 	this.context.beginPath();
 	this.context.rect(px, py, sizex, sizey);
 	this.context.closePath();
 	this.context.fill();
+	this.context.globalAlpha = 1;
 }
 
 Screen.prototype.drawText = function (text, x, y, color, font){

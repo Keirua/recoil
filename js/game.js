@@ -11,9 +11,9 @@ var PLAYER_SIZE = 8;
 var SPEED_X =  2; // movement in pixels per second
 var MAX_SPEED_X =  0.5;
 var G = 1;
-var MAX_TRAIL_QUEUE = 10;
+var MAX_TRAIL_QUEUE = 15;
 
-var TIME_BETWEEN_TRAIL = 50; // 50ms between 2 additions of blocks
+var TIME_BETWEEN_TRAIL = 15; // 50ms between 2 additions of blocks
 
 var BLOCK = {
 	NONE : 0,
@@ -418,15 +418,13 @@ GameState.prototype.Update = function (modifier) {
 	this.hero.pos.y += this.hero.speed.y;
 
 
-	// if (this.trailTimer.IsElapsed(TIME_BETWEEN_TRAIL)){
-	// 	this.trailTimer.Start ();
-	// 	this.trailQueue.push({x:this.hero.pos.x, y:this.hero.pos.y});
-	// 	if (this.trailQueue.length > MAX_TRAIL_QUEUE){
-	// 		this.trailQueue.shift ();
-	// 		console.log (this.trailTimer.ChronoString());
-	// 		console.log (this.trailQueue);
-	// 	}
-	// }
+	if (this.trailTimer.IsElapsed(TIME_BETWEEN_TRAIL)){
+		this.trailTimer.Start ();
+		this.trailQueue.push({x:this.hero.pos.x, y:this.hero.pos.y});
+		if (this.trailQueue.length > MAX_TRAIL_QUEUE){
+			this.trailQueue.shift ();
+		}
+	}
 	
 		
 	// Are they touching?
@@ -457,7 +455,6 @@ function hasCollision (level, cell){
 }
 
 GameState.prototype.die  = function(){
-	// console.log ("I died :/");
 	gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
 	gameEngine.ChangeState("death");
 	g_gameInfo.currDeath++;
@@ -570,13 +567,30 @@ GameState.prototype.DrawLevel = function (level) {
 			32,
 			32,
 			"rgb(0, 250, 250)", 
-			"24px Helvetica"
+			"18px Helvetica"
+		);
+	g_Screen.drawText (
+			this.trailTimer.ChronoString(), 
+			32,
+			64,
+			"rgb(0, 250, 250)", 
+			"12px Helvetica"
 		);
 };
 
 
 GameState.prototype.DrawPlayer = function () {
-	g_Screen.drawRect (this.hero.pos.x, this.hero.pos.y, PLAYER_SIZE, PLAYER_SIZE, "white");
+	var playerColor = 'rgb(255,255,255)';
+	if (this.trailQueue.length > 0)
+	{
+		for (i = 0; i < this.trailQueue.length; ++i)
+		{
+			currPos = this.trailQueue[i];
+			var transpa = i/this.trailQueue.length;
+			g_Screen.drawRect (currPos.x, currPos.y, PLAYER_SIZE, PLAYER_SIZE, playerColor, transpa);
+		}
+	}
+	g_Screen.drawRect (this.hero.pos.x, this.hero.pos.y, PLAYER_SIZE, PLAYER_SIZE, playerColor);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
