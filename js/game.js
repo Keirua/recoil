@@ -420,9 +420,64 @@ var ExplosionEffect = function (color, duration, pos, nbParticles){
 
 
 
+///////////////////////////////////////////////////////////////////////////////
+// BlockDisappearEffect: make 4 blocks slide when a block is destroyed
+///////////////////////////////////////////////////////////////////////////////
+var BlockDisappearEffect = function (color, duration, pos, nbSubdivisions){
+	this.color = color;
+	this.duration = duration;
+	this.elapsed = 0;
+	
+	this.done = false;
+
+	this.particles = [];
+	this.nbParticles = nbSubdivisions*nbSubdivisions;
+	this.size = BLOC_SIZE/nbSubdivisions;
+
+	for (var i = 0; i < nbSubdivisions; ++i){
+		for (var j = 0; j < nbSubdivisions; ++j){
+			var offset = this.size;
+			this.particles.push ({
+				pos : {
+					x: pos.x + i*offset,
+					y: pos.y + j*offset
+				},
+				ySpeed : Math.random ()
+			});
+		}
+	}
+
+	this.Update = function (dt){
+		this.elapsed += dt;
+		if (this.elapsed > this.duration){
+			this.done = true;
+		}
+
+		for (var i = 0; i < this.nbParticles; ++i){
+			var currParticle = this.particles[i];
+			var yNewPos = currParticle.pos.y + currParticle.ySpeed * dt * 100
+			
+			// Update particle position
+			currParticle.pos.y = yNewPos;
+		}
+	}
+	
+	this.Draw = function (ctx){
+		ctx.save ();
+		ctx.globalAlpha = 1-this.elapsed/this.duration;
+		ctx.fillStyle = this.color;
+
+		for (var i = 0; i < this.nbParticles; ++i){
+			var currParticle = this.particles[i];
+			ctx.fillRect(currParticle.pos.x,currParticle.pos.y,this.size,this.size);
+		}
+
+		ctx.restore ();
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
-// ExplosionEffect: handles how to display the explosion effect when ones die
+// DogEffect: handles how to display the dog effect when ones die
 ///////////////////////////////////////////////////////////////////////////////
 var DogEffect = function (duration){
 	this.duration = duration;
@@ -462,8 +517,8 @@ EndOfLevelState.prototype.Draw = function (modifier) {
 	g_Screen.drawCenterText ("End of level \\o/", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
 	
 
-	g_Screen.drawCenterText (g_gameInfo.currDeath + "deaths", GAME_WIDTH/2, GAME_HEIGHT/2, "grey", "18pt Calibri");
-	g_Screen.drawCenterText ('done in' + g_gameInfo.levelTimer.ChronoString(), GAME_WIDTH/2, GAME_HEIGHT/2+40, "grey", "18pt Calibri");
+	g_Screen.drawCenterText (g_gameInfo.currDeath + ' deaths', GAME_WIDTH/2, GAME_HEIGHT/2, "grey", "18pt Calibri");
+	g_Screen.drawCenterText ('done in ' + g_gameInfo.levelTimer.ChronoString(), GAME_WIDTH/2, GAME_HEIGHT/2+40, "grey", "18pt Calibri");
 }
 
 EndOfLevelState.prototype.KeyPress = function(event){
@@ -625,6 +680,7 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 			// Block that can be destroyed
 			if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.DESTROYABLE){
 				this.currLevel[currBlock.y][currBlock.x] = BLOCK.NONE;
+				gameEngine.effects.push ( new BlockDisappearEffect ("grey", 1, {x:currBlock.x*BLOC_SIZE, y:currBlock.y*BLOC_SIZE}, 4) );
 			}
 			// Block that kills
 			else if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
