@@ -123,7 +123,7 @@ var level3 = [
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,5,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
 	[1,0,0,0,0,0,0,0,0,1,1,1,3,0,0,0,0,0,0,0],
-	[1,1,1,1,1,3,3,1,1,1,1,1,1,1,1,1,3,1,1,1]
+	[1,1,1,1,1,3,3,1,1,1,1,1,1,1,1,1,3,1,1,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -137,7 +137,7 @@ var levels = [
 	level3
 ]
 
-level = level1;
+// level = level1;
 
 
 g_DataCache.queue = [
@@ -256,7 +256,7 @@ EditorState.prototype = {
 }
 
 EditorState.prototype.Draw = function (modifier) {
-	gameEngine.states['game'].DrawLevel(level);
+	// gameEngine.states['game'].DrawLevel(level);
 	//Displays a potential future block if necessary
 	if (this.currElem != 0){
 		cell = getCell(gameEngine.mouseCursor);
@@ -270,7 +270,8 @@ EditorState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		// gameEngine.states['game'].Init();
 		gameEngine.ChangeState("game");
-		console.log (JSON.stringify (level));
+
+		// console.log (JSON.stringify (level));
 	}
 	// Buttons 0 ... 4 of the keyboard
 	if (c >= 48 && c <= 52){
@@ -282,7 +283,8 @@ EditorState.prototype.MouseClick = function(event){
 	// Add the block to the level if necessary	
 	cell = getCell(gameEngine.mouseCursor);
 	console.log(gameEngine.mouseCursor);
-	level[cell.y][cell.x] = this.currElem;
+
+	// level[cell.y][cell.x] = this.currElem;
 }
 
 
@@ -294,7 +296,7 @@ GameInfo = function(){
 }
 
 GameInfo.prototype = {
-	currLevelIndex : 1,
+	currLevelIndex : 0,
 	currDeath : 0,
 	totalDeath : 0
 }
@@ -329,14 +331,13 @@ EndOfLevelState = function(){
 }
 
 EndOfLevelState.prototype.Draw = function (modifier) {
-	g_Screen.drawCenterText ("End of level \o//", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
+	g_Screen.drawCenterText ("End of level \\o/", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
 	// g_Screen.drawCenterText ('x ' + g_gameInfo.currDeath, GAME_WIDTH/2, GAME_HEIGHT/2, "#eee", "18pt Calibri");
 }
 
 EndOfLevelState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		g_gameInfo.currLevelIndex++;
-		// this.InitGame();
 		gameEngine.states['game'].InitGame();
 		gameEngine.ChangeState("game");
 	}
@@ -370,7 +371,7 @@ GameState.prototype = {
 
 GameState.prototype.InitGame =function(){
 	// this.currLevel = levels[g_gameInfo.currLevelIndex];
-	console.log (g_gameInfo.currLevelIndex);
+	// console.log (g_gameInfo.currLevelIndex);
 	this.currLevel = levels[g_gameInfo.currLevelIndex].clone();
 	
 	this.InitPlayer();
@@ -422,7 +423,6 @@ GameState.prototype.Update = function (modifier) {
 		this.hero.pos.x+this.hero.speed.x+1.5*PLAYER_SIZE > GAME_WIDTH
 	) {
 		// Reached the end of the level
-		// gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.5, false) );
 		if (g_gameInfo.currLevelIndex < levels.length){
 			gameEngine.ChangeState ("endoflevel");
 		}
@@ -437,7 +437,6 @@ GameState.prototype.Update = function (modifier) {
 	this.hero.pos.x += this.hero.speed.x;
 	this.hero.pos.y += this.hero.speed.y;
 
-
 	if (this.trailTimer.IsElapsed(TIME_BETWEEN_TRAIL)){
 		this.trailTimer.Start ();
 		this.trailQueue.push({x:this.hero.pos.x, y:this.hero.pos.y});
@@ -445,12 +444,6 @@ GameState.prototype.Update = function (modifier) {
 			this.trailQueue.shift ();
 		}
 	}
-	
-		
-	// Are they touching?
-	// 	bullet_sound.play();
-	// 	gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.3, false) );
-	
 };
 
 // Convert screen coordinates into cell coordinates
@@ -487,7 +480,7 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 	{
 		currBlock = blocs [i];
 
-		if (hasCollision (level, currBlock) != BLOCK.NONE){
+		if (hasCollision (this.currLevel, currBlock) != BLOCK.NONE){
 			// Block that can be destroyed
 			if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.DESTROYABLE){
 				this.currLevel[currBlock.y][currBlock.x] = BLOCK.NONE;
