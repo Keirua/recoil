@@ -232,12 +232,19 @@ Timer.prototype = {
 Timer.prototype.Start = function ()
 {
 	this.t0 = Date.now();
+	this.tf = 0;
 }
+
+Timer.prototype.Stop = function ()
+{
+	this.tf = Date.now();
+}
+
 
 // Returns the elapsed's duration (in ms) since last "Start"'s call
 Timer.prototype.Elapsed = function ()
 {
-	var now = Date.now();
+	var now = this.tf == 0 ? Date.now() : this.tf;
 	var dt = (now-this.t0);
 	return dt;
 }

@@ -292,13 +292,14 @@ EditorState.prototype.MouseClick = function(event){
 // Game object
 ///////////////////////////////////////////////////////////////////////////////
 GameInfo = function(){
-
+	this.levelTimer = new Timer ();
 }
 
 GameInfo.prototype = {
 	currLevelIndex : 0,
 	currDeath : 0,
-	totalDeath : 0
+	totalDeath : 0,
+	levelTimer: {}
 }
 
 g_gameInfo = new GameInfo();
@@ -332,12 +333,19 @@ EndOfLevelState = function(){
 
 EndOfLevelState.prototype.Draw = function (modifier) {
 	g_Screen.drawCenterText ("End of level \\o/", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
-	// g_Screen.drawCenterText ('x ' + g_gameInfo.currDeath, GAME_WIDTH/2, GAME_HEIGHT/2, "#eee", "18pt Calibri");
+	
+
+	g_Screen.drawCenterText (g_gameInfo.currDeath + "deaths", GAME_WIDTH/2, GAME_HEIGHT/2, "grey", "18pt Calibri");
+	g_Screen.drawCenterText ('done in' + g_gameInfo.levelTimer.ChronoString(), GAME_WIDTH/2, GAME_HEIGHT/2+40, "grey", "18pt Calibri");
 }
 
 EndOfLevelState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		g_gameInfo.currLevelIndex++;
+
+		g_gameInfo.totalDeath += g_gameInfo.currDeath;
+
+		g_gameInfo.currDeath = 0;
 		gameEngine.states['game'].InitGame();
 		gameEngine.ChangeState("game");
 	}
@@ -355,7 +363,6 @@ var defaultSpeed = {
 		x : 0, 
 		y : 0
 	};
-
 
 var heroStart = {
 		speed : { x : 0, y : 0 },
@@ -393,6 +400,8 @@ GameState.prototype.InitPlayer =function(){
 		}
 	}
 	this.hero.speed = {x:0,y:0};
+
+	g_gameInfo.levelTimer.Start();
 }
 
 GameState.prototype.KeyPress = function(event){
@@ -424,6 +433,7 @@ GameState.prototype.Update = function (modifier) {
 	) {
 		// Reached the end of the level
 		if (g_gameInfo.currLevelIndex < levels.length){
+			g_gameInfo.levelTimer.Stop();
 			gameEngine.ChangeState ("endoflevel");
 		}
 	}
