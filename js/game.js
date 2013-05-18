@@ -11,9 +11,11 @@ var PLAYER_SIZE = 8;
 var SPEED_X =  2; // movement in pixels per second
 var MAX_SPEED_X =  0.5;
 var G = 1;
-var MAX_TRAIL_QUEUE = 15;
 
+var MAX_TRAIL_QUEUE = 15;
 var TIME_BETWEEN_TRAIL = 15; // 50ms between 2 additions of blocks
+
+var DOG_SIZE = 120;
 
 var BLOCK = {
 	NONE : 0,
@@ -302,7 +304,7 @@ GameInfo = function(){
 }
 
 GameInfo.prototype = {
-	currLevelIndex : 3,
+	currLevelIndex : 1,
 	currDeath : 0,
 	totalDeath : 0,
 	levelTimer: {}
@@ -315,10 +317,11 @@ g_gameInfo = new GameInfo();
 ///////////////////////////////////////////////////////////////////////////////
 
 DeathState = function(){
+	this.dog = new DogEffect (1.5);
 }
 
 DeathState.prototype.Update = function (modifier) {
-	dogSprite.Animate();
+	this.dog.Update (modifier);
 }
 
 DeathState.prototype.Draw = function (modifier) {
@@ -330,8 +333,8 @@ DeathState.prototype.Draw = function (modifier) {
 
 	g_Screen.drawCenterText ("Death", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
 	g_Screen.drawCenterText ('x ' + g_gameInfo.currDeath, GAME_WIDTH/2, GAME_HEIGHT/2, "#eee", "18pt Calibri");
-
-	dogSprite.Draw(g_DataCache, gameEngine.states['game'].viewport, 30, 50);
+	
+	this.dog.Draw();
 }
 
 DeathState.prototype.KeyPress = function(event){
@@ -408,6 +411,39 @@ var ExplosionEffect = function (color, duration, pos, nbParticles){
 		}
 
 		ctx.restore ();
+	}
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// ExplosionEffect: handles how to display the explosion effect when ones die
+///////////////////////////////////////////////////////////////////////////////
+var DogEffect = function (duration){
+	this.duration = duration;
+	this.elapsed = 0;
+	
+	this.done = false;
+
+	this.Update = function (dt){
+		this.elapsed += dt;
+		if (this.elapsed > this.duration){
+			this.done = true;
+		}
+
+		dogSprite.Animate();
+	}
+	
+	this.Draw = function (ctx){
+		var ratio = this.elapsed/(this.duration*0.6);
+		if (ratio > 1) ratio = 1;
+		var ySize = 1.5*DOG_SIZE;
+
+		var yPos = GAME_HEIGHT - (ySize*ratio)
+		var xPos = (GAME_WIDTH/2)-(DOG_SIZE)/2;
+
+		dogSprite.Draw(g_DataCache, gameEngine.states['game'].viewport, xPos, yPos, DOG_SIZE, ySize);
 	}
 }
 
