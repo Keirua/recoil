@@ -28,9 +28,14 @@ var BLOCK = {
 
 //Create a sound 
 // /!\ Does not work in firefox
-// http://crackberry.com//ringtone/duck-hunt-dog-laugh-annoying-dog
+// dog : http://crackberry.com//ringtone/duck-hunt-dog-laugh-annoying-dog
+// explosion : http://www.freesound.org/people/inferno/sounds/18384/
+// bounce : http://soundbible.com/1626-Ball-Bounce.html
 var dog_laugh = new Audio("audio/duck-hunt-dog-laugh-ringtone.mp3");
 dog_laugh.loop = false;
+var sound_explosion = new Audio("audio/18384__inferno__largex.mp3");
+// var sound_bounce = new Audio("audio/Ball_Bounce-Popup_Pixels-172648817.mp3");
+var sound_bounce = new Audio();
 
 g_DataCache = new DataCache();
 
@@ -306,7 +311,7 @@ GameInfo = function(){
 }
 
 GameInfo.prototype = {
-	currLevelIndex : 1,
+	currLevelIndex : 3,
 	currDeath : 0,
 	totalDeath : 0,
 	levelTimer: {}
@@ -685,6 +690,7 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 			// Block that kills
 			else if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
 				this.die ();
+				sound_explosion.play ();
 				gameEngine.effects.push ( new ExplosionEffect ("rgb(255, 40, 40)", 1, this.hero.pos, 50) );
 			}
 
@@ -710,8 +716,8 @@ GameState.prototype.handleCollisions = function (){
 	if ((hasCollision (this.currLevel, {x:newCell.x, y:newCellBR.y}) != BLOCK.NONE || hasCollision (this.currLevel, newCellBR) != BLOCK.NONE) && newCellBR.y > this.hero.cell.y)
 	{
 		this.handleVerticalCollisions({x:newCell.x, y:newCellBR.y}, newCellBR);
-		
 		this.hero.speed.y = -0.65;
+		sound_bounce.play();
 	}
 	else
 	{
