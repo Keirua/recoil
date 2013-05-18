@@ -154,7 +154,8 @@ g_DataCache.queue = [
 	"bloc2",
 	"bloc3",
 	"bloc4",
-	"dog"
+	"dog",
+	"arrow"
 ];
 
 var dogSprite = new SpriteSheet(1, 2, 200, "dog");
@@ -311,7 +312,7 @@ GameInfo = function(){
 }
 
 GameInfo.prototype = {
-	currLevelIndex : 3,
+	currLevelIndex : 0,
 	currDeath : 0,
 	totalDeath : 0,
 	levelTimer: {}
@@ -561,18 +562,8 @@ GameState.prototype = {
 	hero : heroStart,
 	currLevel : [], // affected later based on currLevelIndex
 	trailQueue : [],
-	trailTimer : {}
-}
-
-GameState.prototype.InitGame =function(){
-	// this.currLevel = levels[g_gameInfo.currLevelIndex];
-	// console.log (g_gameInfo.currLevelIndex);
-	this.currLevel = levels[g_gameInfo.currLevelIndex].clone();
-	
-	this.InitPlayer();
-	this.trailTimer = new Timer ();
-	this.trailTimer.Start ();
-	this.trailQueue = [];
+	trailTimer : {},
+	arrow : {}
 }
 
 GameState.prototype.InitPlayer =function(){
@@ -586,12 +577,43 @@ GameState.prototype.InitPlayer =function(){
 					x : i*BLOC_SIZE+midPos,
 					y : j*BLOC_SIZE+midPos
 				}
+				this.currLevel[j][i] = BLOCK.NONE;
 			}
 		}
 	}
 	this.hero.speed = {x:0,y:0};
 
 	g_gameInfo.levelTimer.Start();
+}
+
+GameState.prototype.InitLevel = function(){
+	for (var mini = 0; mini < NB_Y_BLOC ; ++mini) {
+		 if (this.currLevel[mini][NB_X_BLOC-1] == BLOCK.NONE){
+		 	break;
+		 }
+	}
+	for (var maxi = NB_Y_BLOC-1; maxi >= 0; --maxi) {
+		 if (this.currLevel[maxi][NB_X_BLOC-1] == BLOCK.NONE){
+		 	break;
+		 }
+	}
+	this.arrow = {
+		mini:mini,
+		maxi:maxi
+	}
+	// console.log (mini,maxi);
+}
+
+GameState.prototype.InitGame =function(){
+	// this.currLevel = levels[g_gameInfo.currLevelIndex];
+	// console.log (g_gameInfo.currLevelIndex);
+	this.currLevel = levels[g_gameInfo.currLevelIndex].clone();
+	
+	this.InitPlayer();
+	this.InitLevel();
+	this.trailTimer = new Timer ();
+	this.trailTimer.Start ();
+	this.trailQueue = [];
 }
 
 GameState.prototype.KeyPress = function(event){
@@ -795,6 +817,15 @@ GameState.prototype.DrawLevel = function (level) {
 			"rgb(0, 250, 250)", 
 			"12px Helvetica"
 		);
+	var ySize = 6;
+	var xSize = 8;
+	this.viewport.DrawSprite (
+					'arrow', 
+					BLOC_SIZE*(NB_X_BLOC-1) + (xSize/BLOC_SIZE)*BLOC_SIZE,
+					BLOC_SIZE*(this.arrow.maxi)-ySize/2,
+					xSize,
+					ySize
+				);
 };
 
 
