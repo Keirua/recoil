@@ -144,8 +144,14 @@ g_DataCache.queue = [
 	"bloc1",
 	"bloc2",
 	"bloc3",
-	"bloc4"
+	"bloc4",
+	"dog"
 ];
+
+var dogSprite = new SpriteSheet(1, 2, 200, "dog");
+dogSprite.SetState (0);
+dogSprite.SetAnimated(true);
+dogSprite.Animate();
 
 ///////////////////////////////////////////////////////////////////////////////
 // Menu state
@@ -311,6 +317,10 @@ g_gameInfo = new GameInfo();
 DeathState = function(){
 }
 
+DeathState.prototype.Update = function (modifier) {
+	dogSprite.Animate();
+}
+
 DeathState.prototype.Draw = function (modifier) {
 	gameEngine.screen.context.save ();
 	gameEngine.screen.context.globalAlpha = 0.3;
@@ -320,6 +330,8 @@ DeathState.prototype.Draw = function (modifier) {
 
 	g_Screen.drawCenterText ("Death", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
 	g_Screen.drawCenterText ('x ' + g_gameInfo.currDeath, GAME_WIDTH/2, GAME_HEIGHT/2, "#eee", "18pt Calibri");
+
+	dogSprite.Draw(g_DataCache, gameEngine.states['game'].viewport, 30, 50);
 }
 
 DeathState.prototype.KeyPress = function(event){
@@ -350,22 +362,37 @@ var ExplosionEffect = function (color, duration, pos, nbParticles){
 			},
 			speed : {
 				x : Math.random ()-0.5,
-				y : Math.random ()-0.5
+				y : -Math.random ()*0.5
 			}
 		});
 	}
-	console.log (this.particles);
 
 	this.Update = function (dt){
 		this.elapsed += dt;
 		if (this.elapsed > this.duration){
 			this.done = true;
 		}
-
+		var level = gameEngine.states["game"].currLevel;
 		for (var i = 0; i < this.nbParticles; ++i){
 			var currParticle = this.particles[i];
-			currParticle.pos.x += currParticle.speed.x * dt * 200;
-			currParticle.pos.y += currParticle.speed.y * dt * 200;
+			var newPos = {
+				x : currParticle.pos.x + currParticle.speed.x * dt * 200,
+				y : currParticle.pos.y + currParticle.speed.y * dt * 200
+			}
+			
+			var currCell = getCell (currParticle.pos);
+			var newCell = getCell (newPos);
+
+			if (hasCollision (level, newCell))  {
+				if (newCell.y > currCell.y)
+					currParticle.speed.y *= -1;
+				if (newCell.x != currCell.x)
+					currParticle.speed.x *= -1;
+			}
+			// Update particle position
+			currParticle.pos.x = newPos.x;
+			currParticle.pos.y = newPos.y;
+			// Add gravity
 			currParticle.speed.y += G * dt;
 		}
 	}
@@ -559,7 +586,7 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 			// Block that kills
 			else if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
 				this.die ();
-				gameEngine.effects.push ( new ExplosionEffect ("rgb(255, 40, 40)", 2, this.hero.pos, 50) );
+				gameEngine.effects.push ( new ExplosionEffect ("rgb(255, 40, 40)", 1, this.hero.pos, 50) );
 			}
 
 			break;
@@ -567,7 +594,7 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 	}
 }
 
-GameState.prototype.handleCollisions = function (modifer){
+GameState.prototype.handleCollisions = function (){
 	this.hero.cell = getCell (this.hero.pos);
 	var newPos = 
 	{
