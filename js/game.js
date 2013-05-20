@@ -573,7 +573,7 @@ GameState.prototype = {
 }
 
 GameState.prototype.InitPlayer =function(){
-	var midPos =  BLOC_SIZE/2-PLAYER_SIZE/2;
+	var midPos =  BLOC_SIZE/2;
 
 	for (var j = 0; j < NB_Y_BLOC; ++j) {
 		for (var i = 0; i < NB_X_BLOC; ++i) {
@@ -692,14 +692,6 @@ function hasCollision (level, cell){
 	return res;
 }
 
-GameState.prototype.die  = function(){
-	gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
-	
-	g_gameInfo.currDeath++;
-	gameEngine.ChangeState("death");
-	deathState.Reset();
-	// dog_laugh.play();
-}
 
 GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 	blocs = [block1, block2];
@@ -727,6 +719,7 @@ GameState.prototype.handleVerticalCollisions  = function(block1, block2){
 }
 
 GameState.prototype.handleCollisions = function (){
+
 	this.hero.cell = getCell (this.hero.pos);
 	var newPos = 
 	{
@@ -748,9 +741,6 @@ GameState.prototype.handleCollisions = function (){
 	}
 	else
 	{
-		// /!\ This is crap
-		// todo -> make a better code, cleaner a more efficient. Same for vertical collisions
-
 		// Horizontal collisions
 		if ((hasCollision (this.currLevel, {x:newCell.x, y: newCell.y}) != BLOCK.NONE || hasCollision (this.currLevel, {x:newCell.x, y: newCellBR.y}) != BLOCK.NONE) && newCell.x < this.hero.cell.x){
 			this.hero.speed.x *= -1;
@@ -759,6 +749,15 @@ GameState.prototype.handleCollisions = function (){
 			this.hero.speed.x *= -1;
 		}	
 	}
+}
+
+GameState.prototype.die  = function(){
+	gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
+	
+	g_gameInfo.currDeath++;
+	gameEngine.ChangeState("death");
+	deathState.Reset();
+	// dog_laugh.play();
 }
 
 
@@ -841,10 +840,10 @@ GameState.prototype.DrawPlayer = function () {
 		{
 			currPos = this.trailQueue[i];
 			var transpa = i/this.trailQueue.length;
-			g_Screen.drawRect (currPos.x, currPos.y, PLAYER_SIZE, PLAYER_SIZE, playerColor, transpa);
+			g_Screen.drawRect (currPos.x - PLAYER_SIZE/2, currPos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor, transpa);
 		}
 	}
-	g_Screen.drawRect (this.hero.pos.x, this.hero.pos.y, PLAYER_SIZE, PLAYER_SIZE, playerColor);
+	g_Screen.drawRect (this.hero.pos.x-PLAYER_SIZE/2, this.hero.pos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
