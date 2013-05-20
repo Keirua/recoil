@@ -135,10 +135,6 @@ SpriteSheet.prototype.Draw  = function(datacache, viewport, x, y, sX, sY){
 	var sizeY = image.height/this.nbStates;
 	var displaySizeX = (sX == undefined) ? sizeX : sX;
 	var displaySizeY = (sY == undefined) ? sizeY : sY;
-	// if (sX != undefined)
-	// 	sizeX = sX;
-	// if (sY != undefined)
-	// 	sizeY = sY;
 
 	// 1st parameter : the image to display
 	// the next 2 : position in the image to start displaying from
