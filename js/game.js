@@ -625,9 +625,9 @@ GameState.prototype.InitGame =function(){
 }
 
 GameState.prototype.KeyPress = function(event){
-	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
-		gameEngine.ChangeState("editor");		
-	}
+	// if (event.keyCode == KB_ENTER) {	// Pressing "enter"
+	// 	gameEngine.ChangeState("editor");		
+	// }
 }
 
 GameState.prototype.Update = function (modifier) {
@@ -718,14 +718,14 @@ GameState.prototype.getCollisionInfo = function (){
 	};
 
 	// If we did not change cell, no new collision
-	// if ((newCell.x != this.hero.cell.x) || (newCell.y != this.hero.cell.y))
+	if (((newCell.x != this.hero.cell.x) || (newCell.y != this.hero.cell.y)) || getCell(this.hero.cell) != BLOCK.NONE)
 	{	
 		// Todo : check if there if a collision via bounding box
 
 		// Linear search of the first collision point
 		var dx = (newPos.x - this.hero.pos.x)/NB_SUBDIVISION;
 		var dy = (newPos.y - this.hero.pos.y)/NB_SUBDIVISION;
-		for (var i = 1; i < NB_SUBDIVISION; ++i){
+		for (var i = 0; i < NB_SUBDIVISION; ++i){
 			var currPoint = {
 				x : this.hero.pos.x + (dx * i),
 				y : this.hero.pos.y + (dy * i)
