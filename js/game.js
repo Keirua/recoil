@@ -313,7 +313,7 @@ GameInfo = function(){
 }
 
 GameInfo.prototype = {
-	currLevelIndex : 0,
+	currLevelIndex : 1,
 	currDeath : 0,
 	totalDeath : 0,
 	levelTimer: {}
@@ -446,6 +446,9 @@ var BlockDisappearEffect = function (color, duration, pos, nbSubdivisions){
 	this.particles = [];
 	this.nbParticles = nbSubdivisions*nbSubdivisions;
 	this.size = BLOC_SIZE/nbSubdivisions;
+	this.sprite = new SpriteSheet (nbSubdivisions, nbSubdivisions);
+	this.sprite.SetAnimated(false);
+	this.nbSubdivisions = nbSubdivisions;
 
 	for (var i = 0; i < nbSubdivisions; ++i){
 		for (var j = 0; j < nbSubdivisions; ++j){
@@ -455,7 +458,11 @@ var BlockDisappearEffect = function (color, duration, pos, nbSubdivisions){
 					x: pos.x + i*offset,
 					y: pos.y + j*offset
 				},
-				ySpeed : Math.random ()
+				ySpeed : Math.random (),
+				id : {
+					x : i,
+					y : j
+				}
 			});
 		}
 	}
@@ -476,13 +483,22 @@ var BlockDisappearEffect = function (color, duration, pos, nbSubdivisions){
 	}
 	
 	this.Draw = function (ctx){
+		var viewport = gameEngine.states['game'].viewport;
+		var image = g_DataCache.getImage ("bloc2");
 		ctx.save ();
 		ctx.globalAlpha = 1-this.elapsed/this.duration;
-		ctx.fillStyle = this.color;
+		// ctx.fillStyle = this.color;
 
 		for (var i = 0; i < this.nbParticles; ++i){
 			var currParticle = this.particles[i];
-			ctx.fillRect(currParticle.pos.x,currParticle.pos.y,this.size,this.size);
+			this.sprite.SetState(currParticle.id.y);
+			this.sprite.SetAnimation(currParticle.id.x);
+			var x = currParticle.pos.x;
+			var y = currParticle.pos.y;
+			var s = BLOC_SIZE/this.nbSubdivisions;
+			viewport.context.drawImage(image, currParticle.id.x*this.size, currParticle.id.y*this.size, s, s, x-viewport.x, y-viewport.y, s, s);
+
+			// ctx.fillRect(currParticle.pos.x,currParticle.pos.y,this.size,this.size);
 		}
 
 		ctx.restore ();
