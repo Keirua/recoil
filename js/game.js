@@ -10,7 +10,7 @@ var PLAYER_SIZE = 8;
 
 var SPEED_X =  2; // movement in pixels per second
 var MAX_SPEED_X =  1;
-var BOUNCE_SPEED_Y =  0.75;
+var BOUNCE_SPEED_Y =  0.8;
 var G = 2;
 
 var MAX_TRAIL_QUEUE = 15;
@@ -299,7 +299,7 @@ EditorState.prototype.KeyPress = function(event){
 EditorState.prototype.MouseClick = function(event){
 	// Add the block to the level if necessary	
 	cell = getCell(gameEngine.mouseCursor);
-	console.log(gameEngine.mouseCursor);
+	// console.log(gameEngine.mouseCursor);
 
 	// level[cell.y][cell.x] = this.currElem;
 }
@@ -329,6 +329,11 @@ DeathState = function(){
 	this.dog = new DogEffect (1.5);
 }
 
+DeathState.prototype.Reset = function (){
+	this.dog.Reset ();
+	dog_laugh.currentTime = 0;
+}
+
 DeathState.prototype.Update = function (modifier) {
 	this.dog.Update (modifier);
 }
@@ -351,7 +356,7 @@ DeathState.prototype.KeyPress = function(event){
 		gameEngine.states['game'].InitGame();
 		gameEngine.ChangeState("game");
 		dog_laugh.pause();
-		dog_laugh.currentTime = 0;
+		
 	}
 }
 
@@ -662,6 +667,10 @@ GameState.prototype.Update = function (modifier) {
 	this.hero.pos.x += this.hero.speed.x;
 	this.hero.pos.y += this.hero.speed.y;
 
+	this.updateTrail ();
+};
+
+GameState.prototype.updateTrail = function (){
 	if (this.trailTimer.IsElapsed(TIME_BETWEEN_TRAIL)){
 		this.trailTimer.Start ();
 		this.trailQueue.push({x:this.hero.pos.x, y:this.hero.pos.y});
@@ -669,7 +678,7 @@ GameState.prototype.Update = function (modifier) {
 			this.trailQueue.shift ();
 		}
 	}
-};
+}
 
 // Convert screen coordinates into cell coordinates
 function getCell (pt){
@@ -692,63 +701,88 @@ function hasCollision (level, cell){
 	return res;
 }
 
-
-GameState.prototype.handleVerticalCollisions  = function(block1, block2){
-	blocs = [block1, block2];
-
-	for (i = 0; i < blocs.length; i++)
-	{
-		currBlock = blocs [i];
-
-		if (hasCollision (this.currLevel, currBlock) != BLOCK.NONE){
-			// Block that can be destroyed
-			if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.DESTROYABLE){
-				this.currLevel[currBlock.y][currBlock.x] = BLOCK.NONE;
-				gameEngine.effects.push ( new BlockDisappearEffect ("grey", 1, {x:currBlock.x*BLOC_SIZE, y:currBlock.y*BLOC_SIZE}, 4) );
-			}
-			// Block that kills
-			else if (this.currLevel[currBlock.y][currBlock.x] == BLOCK.EXPLODE){
-				this.die ();
-				// sound_explosion.play ();
-				gameEngine.effects.push ( new ExplosionEffect ("rgb(255, 40, 40)", 1, this.hero.pos, 50) );
-			}
-
-			break;
-		}
-	}
-}
-
-GameState.prototype.handleCollisions = function (){
-
-	this.hero.cell = getCell (this.hero.pos);
+GameState.prototype.getCollisionInfo = function (){
 	var newPos = 
 	{
 		x : this.hero.pos.x + this.hero.speed.x,
 		y : this.hero.pos.y + this.hero.speed.y
 	}
-	var newPosBottomRight = {
-		x: newPos.x + PLAYER_SIZE,
-		y: newPos.y + PLAYER_SIZE
-	}
+	this.hero.cell = getCell (this.hero.pos);
 	var newCell = getCell (newPos);
-	var newCellBR = getCell (newPosBottomRight);
-	// Vertical collisions
-	if ((hasCollision (this.currLevel, {x:newCell.x, y:newCellBR.y}) != BLOCK.NONE || hasCollision (this.currLevel, newCellBR) != BLOCK.NONE) && newCellBR.y > this.hero.cell.y)
-	{
-		this.handleVerticalCollisions({x:newCell.x, y:newCellBR.y}, newCellBR);
-		this.hero.speed.y = -BOUNCE_SPEED_Y;
-		// sound_bounce.play();
-	}
-	else
-	{
-		// Horizontal collisions
-		if ((hasCollision (this.currLevel, {x:newCell.x, y: newCell.y}) != BLOCK.NONE || hasCollision (this.currLevel, {x:newCell.x, y: newCellBR.y}) != BLOCK.NONE) && newCell.x < this.hero.cell.x){
-			this.hero.speed.x *= -1;
+
+	var NB_SUBDIVISION = BLOC_SIZE;
+	var collisionInfo = {
+		collisionCell :  {},
+		intersectionPoint :  {},
+		blockType : BLOCK.NONE
+	};
+
+	// If we did not change cell, no new collision
+	// if ((newCell.x != this.hero.cell.x) || (newCell.y != this.hero.cell.y))
+	{	
+		// Todo : check if there if a collision via bounding box
+
+		// Linear search of the first collision point
+		var dx = (newPos.x - this.hero.pos.x)/NB_SUBDIVISION;
+		var dy = (newPos.y - this.hero.pos.y)/NB_SUBDIVISION;
+		for (var i = 1; i < NB_SUBDIVISION; ++i){
+			var currPoint = {
+				x : this.hero.pos.x + (dx * i),
+				y : this.hero.pos.y + (dy * i)
+			}
+
+			var currCell = getCell(currPoint);
+			var blockType = hasCollision(this.currLevel, currCell);
+			
+			// Tada ! A collision is found.
+			// The collision point is nearby, let's consider it's here
+			if (blockType != BLOCK.NONE)
+			{
+				collisionInfo.collisionCell = currCell;
+				collisionInfo.intersectionPoint = currPoint;
+				collisionInfo.blockType = blockType;
+
+				break;
+			}
 		}
-		if ((hasCollision (this.currLevel, {x:newCellBR.x, y: newCell.y}) != BLOCK.NONE || hasCollision (this.currLevel, {x:newCellBR.x, y: newCellBR.y}) != BLOCK.NONE) && newCellBR.x > this.hero.cell.x){
-			this.hero.speed.x *= -1;
-		}	
 	}
+
+	return collisionInfo;
+}
+
+GameState.prototype.handlePhysics = function (collisionInfo){
+	if (collisionInfo.blockType != BLOCK.NONE) {
+		if (collisionInfo.collisionCell.x != this.hero.cell.x)
+			this.hero.speed.x *= -1;
+		else if (collisionInfo.collisionCell.y > this.hero.cell.y )
+		{
+			this.hero.speed.y = -BOUNCE_SPEED_Y;
+		}			
+	}
+}
+
+GameState.prototype.handleGameObjects = function (collisionInfo){
+	if (collisionInfo.blockType != BLOCK.NONE)
+	{
+		var currBlock = collisionInfo.collisionCell;
+		if (collisionInfo.blockType == BLOCK.EXPLODE){
+			this.die ();
+			// sound_explosion.play ();
+			gameEngine.effects.push ( new ExplosionEffect ("rgb(255, 40, 40)", 1, this.hero.pos, 50) );
+		}
+		else if (collisionInfo.blockType == BLOCK.DESTROYABLE && collisionInfo.collisionCell.y > this.hero.cell.y )
+		{
+			this.currLevel[currBlock.y][currBlock.x] = BLOCK.NONE;
+			gameEngine.effects.push ( new BlockDisappearEffect ("grey", 1, {x:currBlock.x*BLOC_SIZE, y:currBlock.y*BLOC_SIZE}, 4) );
+		}			
+	}
+}
+
+GameState.prototype.handleCollisions = function (dt){
+	var collisionInfo = this.getCollisionInfo ();
+
+	this.handlePhysics (collisionInfo);
+	this.handleGameObjects (collisionInfo);
 }
 
 GameState.prototype.die  = function(){
@@ -756,7 +790,7 @@ GameState.prototype.die  = function(){
 	
 	g_gameInfo.currDeath++;
 	gameEngine.ChangeState("death");
-	deathState.Reset();
+	gameEngine.states["death"].Reset();
 	// dog_laugh.play();
 }
 
