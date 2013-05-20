@@ -35,8 +35,7 @@ var BLOCK = {
 var dog_laugh = new Audio("audio/duck-hunt-dog-laugh-ringtone.mp3");
 dog_laugh.loop = false;
 var sound_explosion = new Audio("audio/18384__inferno__largex.mp3");
-// var sound_bounce = new Audio("audio/Ball_Bounce-Popup_Pixels-172648817.mp3");
-var sound_bounce = new Audio();
+var sound_bounce = new Audio("audio/Ball_Bounce-Popup_Pixels-172648817.mp3");
 
 g_DataCache = new DataCache();
 
@@ -67,6 +66,7 @@ var level = [
 	[1,0,0,0,0,0,0,0,4,3,2,2,0,0,0,0,0,0,0,0],
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
+
 // See https://www.youtube.com/watch?v=NQaCpD5w8vQ for other levels
 var level0 = [
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -493,6 +493,11 @@ var DogEffect = function (duration){
 	
 	this.done = false;
 
+	this.Reset = function (){
+		this.elapsed = 0;
+		this.done = false;
+	}
+
 	this.Update = function (dt){
 		this.elapsed += dt;
 		if (this.elapsed > this.duration){
@@ -692,6 +697,7 @@ GameState.prototype.die  = function(){
 	
 	g_gameInfo.currDeath++;
 	gameEngine.ChangeState("death");
+	deathState.Reset();
 	// dog_laugh.play();
 }
 
