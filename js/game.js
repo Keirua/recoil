@@ -9,8 +9,8 @@ var BLOC_SIZE = 32;
 var PLAYER_SIZE = 8;
 
 var SPEED_X =  2; // movement in pixels per second
-var MAX_SPEED_X =  0.7;
-var BOUNCE_SPEED_Y =  0.7;
+var MAX_SPEED_X =  1;
+var BOUNCE_SPEED_Y =  0.75;
 var G = 2;
 
 var MAX_TRAIL_QUEUE = 15;
