@@ -9,8 +9,9 @@ var BLOC_SIZE = 32;
 var PLAYER_SIZE = 8;
 
 var SPEED_X =  2; // movement in pixels per second
-var MAX_SPEED_X =  0.5;
-var G = 1;
+var MAX_SPEED_X =  0.7;
+var BOUNCE_SPEED_Y =  0.7;
+var G = 2;
 
 var MAX_TRAIL_QUEUE = 15;
 var TIME_BETWEEN_TRAIL = 15; // 50ms between 2 additions of blocks
@@ -601,12 +602,9 @@ GameState.prototype.InitLevel = function(){
 		mini:mini,
 		maxi:maxi
 	}
-	// console.log (mini,maxi);
 }
 
 GameState.prototype.InitGame =function(){
-	// this.currLevel = levels[g_gameInfo.currLevelIndex];
-	// console.log (g_gameInfo.currLevelIndex);
 	this.currLevel = levels[g_gameInfo.currLevelIndex].clone();
 	
 	this.InitPlayer();
@@ -739,7 +737,7 @@ GameState.prototype.handleCollisions = function (){
 	if ((hasCollision (this.currLevel, {x:newCell.x, y:newCellBR.y}) != BLOCK.NONE || hasCollision (this.currLevel, newCellBR) != BLOCK.NONE) && newCellBR.y > this.hero.cell.y)
 	{
 		this.handleVerticalCollisions({x:newCell.x, y:newCellBR.y}, newCellBR);
-		this.hero.speed.y = -0.65;
+		this.hero.speed.y = -BOUNCE_SPEED_Y;
 		// sound_bounce.play();
 	}
 	else
