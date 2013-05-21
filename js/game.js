@@ -317,10 +317,12 @@ GameInfo.prototype = {
 	currDeath : 0,
 	totalDeath : 0,
 	levelTimer : {},
-	replay : {
+	currReplay : {
 		totalDuration : 0,
 		keyFrames : []
-	}
+	},
+	replays : [],
+	replayers : []
 }
 
 g_gameInfo = new GameInfo();
@@ -362,6 +364,12 @@ DeathState.prototype.KeyPress = function(event){
 		dog_laugh.pause();
 		
 	}
+}
+
+DeathState.prototype.OnEnterState = function(params){
+	g_gameInfo.replays.push (g_gameInfo.currReplay.clone ());
+	g_gameInfo.currReplay.totalDuration = 0;
+	g_gameInfo.currReplay.keyFrames = [];
 }
 
 
@@ -559,35 +567,43 @@ EndOfLevelState.prototype = {
 }
 
 EndOfLevelState.prototype.OnEnterState = function (params){
-	console.log (g_gameInfo);
-	this.Replayer = {
-		currentTime : 0,
-		currentFrameIndex : 0,
-		currPos : {x:0, y:0}
-	};
-
+	g_gameInfo.replays.push (g_gameInfo.currReplay.clone ());
+	var defaultReplayer = {
+			currentTime : 0,
+			currentFrameIndex : 0,
+			currPos : {x:0, y:0}
+		};
+	for (var i = 0; i < g_gameInfo.replays.length; i++){
+		g_gameInfo.replayers.push (defaultReplayer.clone());
+	}
 }
 
 EndOfLevelState.prototype.Update = function (modifier) {
-	while ((g_gameInfo.replay.keyFrames[ this.Replayer.currentFrameIndex ].elapsed + modifier < this.Replayer.currentTime)
-		&& (this.Replayer.currentFrameIndex < g_gameInfo.replay.keyFrames.length-1)) {
-		this.Replayer.currentFrameIndex++;
+	// Updates the replayers
+	for (var i = 0; i < g_gameInfo.replays.length; i++){
+		
+		var currReplay = g_gameInfo.replays[i];
+		var replayer = g_gameInfo.replayers[i];
+
+		while ((currReplay.keyFrames[ replayer.currentFrameIndex ].elapsed + modifier < replayer.currentTime)
+			&& (replayer.currentFrameIndex < currReplay.keyFrames.length-1)) {
+			replayer.currentFrameIndex++;
+		}
+		replayer.currPos = currReplay.keyFrames[ replayer.currentFrameIndex ].pos;
+		replayer.currentTime += modifier;
 	}
-	this.Replayer.currPos = g_gameInfo.replay.keyFrames[this.Replayer.currentFrameIndex].pos.clone();
-	this.Replayer.currentTime += modifier;
-	var pos = this.Replayer.currPos;
 }
 
 EndOfLevelState.prototype.Draw = function (modifier) {
 	g_Screen.drawCenterText ("End of level \\o/", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
 	
+	// Quick & dirty display of the level and it's replay
 	gameEngine.screen.context.save ();
 	gameEngine.screen.context.globalAlpha = 0.3;
 	gameEngine.states['game'].DrawLevel (gameEngine.states['game'].currLevel);
-	var pos = this.Replayer.currPos;
-	g_Screen.drawRect (pos.x-PLAYER_SIZE/2, pos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, "white");
-
-
+	for (var i = 0; i < g_gameInfo.replayers.length; i++){
+		g_Screen.drawRect (g_gameInfo.replayers[i].currPos.x-PLAYER_SIZE/2, g_gameInfo.replayers[i].currPos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, "white");
+	}
 	gameEngine.screen.context.restore ();
 
 	g_Screen.drawCenterText (g_gameInfo.currDeath + ' deaths', GAME_WIDTH/2, GAME_HEIGHT/2, "grey", "18pt Calibri");
@@ -687,13 +703,17 @@ GameState.prototype.KeyPress = function(event){
 	// }
 }
 
-GameState.prototype.Update = function (modifier) {
-	g_gameInfo.replay.keyFrames.push ({
-		elapsed : g_gameInfo.replay.totalDuration,
-		dt : modifier,
+GameState.prototype.UpdateCurrentReplay = function (dt){
+	g_gameInfo.currReplay.keyFrames.push ({
+		elapsed : g_gameInfo.currReplay.totalDuration,
+		dt : dt,
 		pos : this.hero.pos.clone()
 	});
-	g_gameInfo.replay.totalDuration += modifier;
+	g_gameInfo.currReplay.totalDuration += dt;
+} 
+
+GameState.prototype.Update = function (modifier) {
+	this.UpdateCurrentReplay (modifier);
 
 	if (KB_LEFT in gameEngine.keysDown) {
 		this.hero.speed.x -= SPEED_X * modifier;
