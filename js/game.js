@@ -316,7 +316,11 @@ GameInfo.prototype = {
 	currLevelIndex : 1,
 	currDeath : 0,
 	totalDeath : 0,
-	levelTimer: {}
+	levelTimer : {},
+	replay : {
+		totalDuration : 0,
+		keyFrames : []
+	}
 }
 
 g_gameInfo = new GameInfo();
@@ -547,12 +551,49 @@ var DogEffect = function (duration){
 EndOfLevelState = function(){
 }
 
+EndOfLevelState.prototype = {
+	Replayer : {
+		currentTime : 0,
+		currentFrameIndex : 0
+	}
+}
+
+EndOfLevelState.prototype.OnEnterState = function (params){
+	console.log (g_gameInfo);
+	this.Replayer = {
+		currentTime : 0,
+		currentFrameIndex : 0,
+		currPos : {x:0, y:0}
+	};
+
+}
+
+EndOfLevelState.prototype.Update = function (modifier) {
+	while ((g_gameInfo.replay.keyFrames[ this.Replayer.currentFrameIndex ].elapsed + modifier < this.Replayer.currentTime)
+		&& (this.Replayer.currentFrameIndex < g_gameInfo.replay.keyFrames.length-1)) {
+		this.Replayer.currentFrameIndex++;
+	}
+	this.Replayer.currPos = g_gameInfo.replay.keyFrames[this.Replayer.currentFrameIndex].pos.clone();
+	this.Replayer.currentTime += modifier;
+	var pos = this.Replayer.currPos;
+}
+
 EndOfLevelState.prototype.Draw = function (modifier) {
 	g_Screen.drawCenterText ("End of level \\o/", GAME_WIDTH/2, GAME_HEIGHT/2-50, "grey", "24pt Calibri");
 	
+	gameEngine.screen.context.save ();
+	gameEngine.screen.context.globalAlpha = 0.3;
+	gameEngine.states['game'].DrawLevel (gameEngine.states['game'].currLevel);
+	var pos = this.Replayer.currPos;
+	g_Screen.drawRect (pos.x-PLAYER_SIZE/2, pos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, "white");
+
+
+	gameEngine.screen.context.restore ();
 
 	g_Screen.drawCenterText (g_gameInfo.currDeath + ' deaths', GAME_WIDTH/2, GAME_HEIGHT/2, "grey", "18pt Calibri");
 	g_Screen.drawCenterText ('done in ' + g_gameInfo.levelTimer.ChronoString(), GAME_WIDTH/2, GAME_HEIGHT/2+40, "grey", "18pt Calibri");
+
+
 }
 
 EndOfLevelState.prototype.KeyPress = function(event){
@@ -647,6 +688,13 @@ GameState.prototype.KeyPress = function(event){
 }
 
 GameState.prototype.Update = function (modifier) {
+	g_gameInfo.replay.keyFrames.push ({
+		elapsed : g_gameInfo.replay.totalDuration,
+		dt : modifier,
+		pos : this.hero.pos.clone()
+	});
+	g_gameInfo.replay.totalDuration += modifier;
+
 	if (KB_LEFT in gameEngine.keysDown) {
 		this.hero.speed.x -= SPEED_X * modifier;
 		if (this.hero.speed.x < -MAX_SPEED_X)

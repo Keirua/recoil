@@ -311,6 +311,13 @@ K2DEngine.prototype.AddState = function (name, state){
 }
 
 K2DEngine.prototype.ChangeState = function (state){
+	// Call 2 triggers if they exist (OnLeaveState on the current state, and OnEnterState on the next state)
+	if (this.states[this.currState] != undefined && this.states[this.currState].OnLeaveState != undefined){
+		this.states[this.currState].OnLeaveState ({nextState:state});
+	}
+	if (this.states[state] != undefined && this.states[state].OnEnterState != undefined){
+		this.states[state].OnEnterState ({previousState:this.currState});
+	}
 	this.currState = state;
 }
 
