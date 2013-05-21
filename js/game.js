@@ -312,15 +312,17 @@ GameInfo = function(){
 	this.levelTimer = new Timer ();
 }
 
+var defaultReplay = {
+		totalDuration : 0,
+		keyFrames : []
+	};
+
 GameInfo.prototype = {
 	currLevelIndex : 1,
 	currDeath : 0,
 	totalDeath : 0,
 	levelTimer : {},
-	currReplay : {
-		totalDuration : 0,
-		keyFrames : []
-	},
+	currReplay : defaultReplay.clone(),
 	replays : [],
 	replayers : []
 }
@@ -576,6 +578,12 @@ EndOfLevelState.prototype.OnEnterState = function (params){
 	for (var i = 0; i < g_gameInfo.replays.length; i++){
 		g_gameInfo.replayers.push (defaultReplayer.clone());
 	}
+}
+
+EndOfLevelState.prototype.OnLeaveState = function (params){
+	g_gameInfo.replays = [];
+	g_gameInfo.replayers = [];
+	g_gameInfo.currReplay = defaultReplay.clone();
 }
 
 EndOfLevelState.prototype.Update = function (modifier) {
