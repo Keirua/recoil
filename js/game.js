@@ -384,20 +384,20 @@ DeathState.prototype.OnEnterState = function(params){
 ///////////////////////////////////////////////////////////////////////////////
 // ExplosionEffect: handles how to display the explosion effect when ones die
 ///////////////////////////////////////////////////////////////////////////////
-var ExplosionEffect = function (color, duration, pos, nbParticles){
-	this.color = color;
-	this.duration = duration;
+var ExplosionEffect = function (params){
+	this.color = params.color;
+	this.duration = params.duration;
 	this.elapsed = 0;
 	
 	this.done = false;
 
 	this.particles = [];
-	this.nbParticles = nbParticles;
-	for (var i = 0; i < nbParticles; ++i){
+	this.nbParticles = params.nbParticles;
+	for (var i = 0; i < params.nbParticles; ++i){
 		this.particles.push ({
 			pos : {
-				x: pos.x,
-				y: pos.y
+				x: params.pos.x,
+				y: params.pos.y
 			},
 			speed : {
 				x : Math.random ()-0.5,
@@ -456,27 +456,28 @@ var ExplosionEffect = function (color, duration, pos, nbParticles){
 ///////////////////////////////////////////////////////////////////////////////
 // BlockDisappearEffect: make 4 blocks slide when a block is destroyed
 ///////////////////////////////////////////////////////////////////////////////
-var BlockDisappearEffect = function (color, duration, pos, nbSubdivisions){
-	this.color = color;
-	this.duration = duration;
+var BlockDisappearEffect = function (params){
+	this.color = params.color;
+	this.duration = params.duration;
 	this.elapsed = 0;
 	
 	this.done = false;
 
 	this.particles = [];
-	this.nbParticles = nbSubdivisions*nbSubdivisions;
-	this.size = BLOC_SIZE/nbSubdivisions;
-	this.sprite = new SpriteSheet (nbSubdivisions, nbSubdivisions);
+	this.nbSubdivisions = params.nbSubdivisions;
+	this.nbParticles = this.nbSubdivisions*this.nbSubdivisions;
+	this.size = BLOC_SIZE/this.nbSubdivisions;
+	this.sprite = new SpriteSheet (this.nbSubdivisions, this.nbSubdivisions);
 	this.sprite.SetAnimated(false);
-	this.nbSubdivisions = nbSubdivisions;
+	
 
-	for (var i = 0; i < nbSubdivisions; ++i){
-		for (var j = 0; j < nbSubdivisions; ++j){
+	for (var i = 0; i < this.nbSubdivisions; ++i){
+		for (var j = 0; j < this.nbSubdivisions; ++j){
 			var offset = this.size;
 			this.particles.push ({
 				pos : {
-					x: pos.x + i*offset,
-					y: pos.y + j*offset
+					x: params.pos.x + i*offset,
+					y: params.pos.y + j*offset
 				},
 				ySpeed : Math.random (),
 				id : {
@@ -873,12 +874,12 @@ GameState.prototype.handleGameObjects = function (collisionInfo){
 		if (collisionInfo.blockType == BLOCK.EXPLODE){
 			this.die ();
 			// sound_explosion.play ();
-			gameEngine.effects.push ( new ExplosionEffect ("rgb(255, 40, 40)", 1, this.hero.pos, 50) );
+			gameEngine.effects.push ( new ExplosionEffect ({color:"rgb(255, 40, 40)", duration:1, pos:this.hero.pos.clone(), nbParticles:50}) );
 		}
 		else if (collisionInfo.blockType == BLOCK.DESTROYABLE && collisionInfo.collisionCell.y > this.hero.cell.y )
 		{
 			this.currLevel[currBlock.y][currBlock.x] = BLOCK.NONE;
-			gameEngine.effects.push ( new BlockDisappearEffect ("grey", 1, {x:currBlock.x*BLOC_SIZE, y:currBlock.y*BLOC_SIZE}, 4) );
+			gameEngine.effects.push ( new BlockDisappearEffect ({color:"grey", duration:1, pos:{x:currBlock.x*BLOC_SIZE, y:currBlock.y*BLOC_SIZE}, nbSubdivisions:4}) );
 		}			
 	}
 }
