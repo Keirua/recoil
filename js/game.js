@@ -215,14 +215,13 @@ MenuState.prototype.KeyPress = function(event){
 	if (event.keyCode == KB_ENTER) {	// Pressing "enter"
 		if (this.activeItem == 0){
 			gameEngine.ChangeState("game");
-
-			gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.3, false) );
+			gameEngine.effects.push ( new FadeEffect ({color:"rgb(255, 255, 255)", duration:0.3, fadeType:FadeEffect.FADE_OUT}) );
 		}
 		else if (this.activeItem == 2)
 		{
 			gameEngine.ChangeState("credit");
 			creditState.Init();
-			gameEngine.effects.push ( new FadeEffect ("rgb(255, 255, 255)", 0.3, false) );
+			gameEngine.effects.push ( new FadeEffect ({color:"rgb(255, 255, 255)", duration:0.3, fadeType:FadeEffect.FADE_OUT}) );
 		}
 	}
 	if (event.keyCode == KB_UP) { // Player holding up
@@ -892,7 +891,7 @@ GameState.prototype.handleCollisions = function (dt){
 }
 
 GameState.prototype.die  = function(){
-	gameEngine.effects.push ( new FadeEffect ("rgb(255, 40, 40)", 0.3, false) );
+	gameEngine.effects.push ( new FadeEffect ({color:"rgb(255, 40, 40)", duration:0.3, fadeType:FadeEffect.FADE_IN}) );
 	
 	g_gameInfo.currDeath++;
 	gameEngine.ChangeState("death");

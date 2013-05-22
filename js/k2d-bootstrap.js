@@ -202,11 +202,14 @@ SpriteSheet.prototype.Animate = function(){
 ///////////////////////////////////////////////////////////////////////////////
 // FadeEffect: handles how to display and animate fade-in and fade-out effects
 ///////////////////////////////////////////////////////////////////////////////
-var FadeEffect = function (color, duration, fadeIn){
-	this.color = color;
-	this.duration = duration;
+var FadeEffect = function (params){
+	this.FADE_IN = 0;
+	this.FADE_OUT = 0;
+
+	this.color = params.color;
+	this.duration = params.duration;
 	this.elapsed = 0;
-	this.fadeIn = fadeIn;
+	this.fadeType = params.fadeType;
 	
 	this.done = false;
 	
@@ -219,7 +222,7 @@ var FadeEffect = function (color, duration, fadeIn){
 	
 	this.Draw = function (ctx){
 		ctx.fillStyle= this.color;
-		if (this.fadeIn)
+		if (this.fadeType == this.FADE_IN)
 			ctx.globalAlpha=this.elapsed/this.duration;
 		else
 			ctx.globalAlpha=1-this.elapsed/this.duration;
