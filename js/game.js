@@ -32,10 +32,11 @@ var BLOCK = {
 // dog : http://crackberry.com//ringtone/duck-hunt-dog-laugh-annoying-dog
 // explosion : http://www.freesound.org/people/inferno/sounds/18384/
 // bounce : http://soundbible.com/1626-Ball-Bounce.html
-var dog_laugh = new Audio("audio/duck-hunt-dog-laugh-ringtone.mp3");
-dog_laugh.loop = false;
-var sound_explosion = new Audio("audio/18384__inferno__largex.mp3");
-var sound_bounce = new Audio("audio/Ball_Bounce-Popup_Pixels-172648817.mp3");
+
+// var dog_laugh = g_DataCache.getSound("duck-hunt-dog-laugh-ringtone");
+// dog_laugh.loop = false;
+// var sound_explosion = g_DataCache.getSound("18384__inferno__largex");
+// var sound_bounce = g_DataCache.getSound("Ball_Bounce-Popup_Pixels-172648817");
 
 g_DataCache = new DataCache();
 
@@ -150,13 +151,19 @@ var levels = [
 // level = level1;
 
 
-g_DataCache.queue = [
+g_DataCache.imageQueue = [
 	"bloc1",
 	"bloc2",
 	"bloc3",
 	"bloc4",
 	"dog",
 	"arrow"
+];
+
+g_DataCache.soundQueue = [
+	"duck-hunt-dog-laugh-ringtone",
+	"18384__inferno__largex",
+	"Ball_Bounce-Popup_Pixels-172648817"
 ];
 
 var dogSprite = new SpriteSheet(1, 2, 200, "dog");
@@ -188,7 +195,7 @@ MenuState.prototype.Draw = function(){
 	
 	// Display the Title
 	g_Screen.drawText ("Recoil", 32,32, "rgb(0, 250, 250)", "26px Helvetica");
-	g_Screen.drawText ("Cache : " + g_DataCache.queue.length, 32,64, "rgb(0, 250, 250)", "26px Helvetica");
+	g_Screen.drawText ("Cache : " + g_DataCache.imageQueue.length, 32,64, "rgb(0, 250, 250)", "26px Helvetica");
 	
 	// Display the menu
 	for (i = 0; i < this.menuItems.length; i++)
@@ -658,6 +665,13 @@ GameState.prototype = {
 	arrow : {}
 }
 
+GameState.prototype.OnEnterState = function (){
+	dog_laugh = g_DataCache.getSound("duck-hunt-dog-laugh-ringtone");
+	dog_laugh.loop = false;
+	sound_explosion = g_DataCache.getSound("18384__inferno__largex");
+	sound_bounce = g_DataCache.getSound("Ball_Bounce-Popup_Pixels-172648817");
+}
+
 GameState.prototype.InitPlayer =function(){
 	var midPos =  BLOC_SIZE/2;
 
@@ -970,6 +984,7 @@ GameState.prototype.DrawPlayer = function () {
 		}
 	}
 	g_Screen.drawRect (this.hero.pos.x-PLAYER_SIZE/2, this.hero.pos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor);
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -70,24 +70,28 @@ Screen.prototype.clear = function(color){
 // Datacache: Basic management of a resource cache.
 // Allow the loading of ressources during a loading screen, where
 // a progress bar can be displayed
+// Todo : have a more OO system
 ///////////////////////////////////////////////////////////////////////////////
 DataCache = function ()
 {
-	this.queue = [];
 	this.nbDone = 0;
+
+	this.imageQueue = [];
 	this.imageCache = {};
-	// this.that = this;
+	
+	this.soundQueue = [];
+	this.soundCache = {};
 }
 
 DataCache.prototype.done = function (){
-	return this.nbDone == this.queue.length;
+	return this.nbDone == this.imageQueue.length;
 };
 
 // Computes the percentage of what has been downloaded
 DataCache.prototype.Percentage = function (){
 	var res = 1.0;
-	if (this.queue.length != 0)
-		res = this.nbDone/this.queue.length;
+	if (this.imageQueue.length != 0)
+		res = this.nbDone/this.imageQueue.length;
 		
 	return res; 
 }
@@ -96,20 +100,37 @@ DataCache.prototype.getImage = function(img){
 	return this.imageCache[img];
 }
 
+DataCache.prototype.getSound = function(img){
+	return this.soundCache[img];
+}
+
 DataCache.prototype.load = function (){
-	for (i = 0; i < this.queue.length; i++)
+	this.loadImages ();	
+	this.loadSound ();	
+}
+
+DataCache.prototype.loadImages = function (){
+	for (i = 0; i < this.imageQueue.length; i++)
 	{
-		var src = "images/" + this.queue[i] + ".png";
+		var src = "images/" + this.imageQueue[i] + ".png";
 		var img = new Image ();
 		img.src = src;
 		var that = this;
 		img.addEventListener("load", function() {
 			that.nbDone += 1;
 		}, false);
-		this.imageCache[this.queue[i]] = img;
+		this.imageCache[this.imageQueue[i]] = img;
 	}
 }
 
+DataCache.prototype.loadSound = function (){
+	for (i = 0; i < this.soundQueue.length; i++)
+	{
+		var src = "audio/" + this.soundQueue[i] + ".mp3";
+		var img = new Audio (src);
+		this.soundCache[this.soundQueue[i]] = img;
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // SpriteSheet: handles sprite animations
@@ -382,7 +403,7 @@ K2DEngine.prototype.GameLoop = function () {
 	var now = Date.now();
 	var delta = now - prevDate;
 
-	that.screen.clear("rgb(0,0,0)");
+	that.screen.clear("rgb(0,0,0)"); // Todo : move this line away
 	that.Update(delta / 1000);
 	that.Draw();
 
