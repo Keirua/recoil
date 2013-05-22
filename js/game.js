@@ -340,7 +340,7 @@ g_gameInfo = new GameInfo();
 ///////////////////////////////////////////////////////////////////////////////
 
 DeathState = function(){
-	this.dog = new DogEffect (1.5);
+	this.dog = new DogEffect ({duration :1.5});
 }
 
 DeathState.prototype.Reset = function (){
@@ -528,8 +528,8 @@ var BlockDisappearEffect = function (color, duration, pos, nbSubdivisions){
 ///////////////////////////////////////////////////////////////////////////////
 // DogEffect: handles how to display the dog effect when ones die
 ///////////////////////////////////////////////////////////////////////////////
-var DogEffect = function (duration){
-	this.duration = duration;
+var DogEffect = function (params){
+	this.duration = params.duration;
 	this.elapsed = 0;
 	
 	this.done = false;
