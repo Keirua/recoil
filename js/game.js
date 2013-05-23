@@ -639,20 +639,65 @@ EndOfLevelState.prototype.KeyPress = function(event){
 	}
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Trail class
+///////////////////////////////////////////////////////////////////////////////
+Trail = function(){
+
+}
+
+Trail.prototype = {
+	queue : [],
+	timer : {},
+}
+
+Trail.prototype.Init = function (){
+	this.timer = new Timer ();
+	this.timer.Start ();
+	this.queue = [];
+}
+
+Trail.prototype.AddPos = function(pos){
+	if (this.timer.IsElapsed(TIME_BETWEEN_TRAIL)){
+		this.timer.Start ();
+		this.queue.push({x:pos.x, y:pos.y});
+		if (this.queue.length > MAX_TRAIL_QUEUE){
+			this.queue.shift ();
+		}
+	}
+}
+
+
+Trail.prototype.Draw = function (){
+	var playerColor = 'rgb(255,255,255)';
+	
+	if (this.queue.length > 0)
+	{
+		for (i = 0; i < this.queue.length; ++i)
+		{
+			currPos = this.queue[i];
+			var transpa = i/this.queue.length;
+			g_Screen.drawRect (currPos.x - PLAYER_SIZE/2, currPos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor, transpa);
+		}
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Player class
 ///////////////////////////////////////////////////////////////////////////////
 Player = function(){
-
+	this.trail = new Trail ();
 }
 
 Player.prototype = {
 	pos : {x:0,y:0},
-	speed : {x:0,y:0}
+	speed : {x:0,y:0},
+	trail : {}
 }
 
 Player.prototype.Init = function (){
-
+	this.trail.Init ();
 }
 
 Player.prototype.InitFromLevel = function(level){
@@ -676,9 +721,11 @@ Player.prototype.InitFromLevel = function(level){
 Player.prototype.Draw = function (){
 	var playerColor = 'rgb(255,255,255)';
 	
-	g_Screen.drawRect (this.pos.x-PLAYER_SIZE/2, this.pos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor);
+	this.trail.Draw ();
 
+	g_Screen.drawRect (this.pos.x-PLAYER_SIZE/2, this.pos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor);
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Game state
@@ -701,8 +748,7 @@ var heroStart = {
 GameState.prototype = {
 	// hero : heroStart,
 	currLevel : [], // affected later based on currLevelIndex
-	trailQueue : [],
-	trailTimer : {},
+	
 	arrow : {}
 }
 
@@ -715,6 +761,7 @@ GameState.prototype.OnEnterState = function (){
 
 GameState.prototype.InitPlayer =function(){
 	this.hero  = new Player ();
+	this.hero.Init ();
 	this.hero.InitFromLevel(this.currLevel);
 }
 
@@ -744,9 +791,7 @@ GameState.prototype.InitGame =function(){
 	this.InitLevel();	
 	this.InitPlayer();
 
-	this.trailTimer = new Timer ();
-	this.trailTimer.Start ();
-	this.trailQueue = [];
+
 }
 
 GameState.prototype.KeyPress = function(event){
@@ -803,18 +848,8 @@ GameState.prototype.Update = function (modifier) {
 	this.hero.pos.x += this.hero.speed.x;
 	this.hero.pos.y += this.hero.speed.y;
 
-	this.updateTrail ();
+	this.hero.trail.AddPos (this.hero.pos);
 };
-
-GameState.prototype.updateTrail = function (){
-	if (this.trailTimer.IsElapsed(TIME_BETWEEN_TRAIL)){
-		this.trailTimer.Start ();
-		this.trailQueue.push({x:this.hero.pos.x, y:this.hero.pos.y});
-		if (this.trailQueue.length > MAX_TRAIL_QUEUE){
-			this.trailQueue.shift ();
-		}
-	}
-}
 
 // Convert screen coordinates into cell coordinates
 function getCell (pt){
@@ -983,13 +1018,7 @@ GameState.prototype.DrawLevel = function (level) {
 			"rgb(0, 250, 250)", 
 			"18px Helvetica"
 		);
-	g_Screen.drawText (
-			this.trailTimer.ChronoString(), 
-			32,
-			64,
-			"rgb(0, 250, 250)", 
-			"12px Helvetica"
-		);
+
 	var ySize = 6;
 	var xSize = 8;
 	this.viewport.DrawSprite (
@@ -1003,15 +1032,7 @@ GameState.prototype.DrawLevel = function (level) {
 
 GameState.prototype.DrawPlayer = function () {
 	var playerColor = "white";
-	if (this.trailQueue.length > 0)
-	{
-		for (i = 0; i < this.trailQueue.length; ++i)
-		{
-			currPos = this.trailQueue[i];
-			var transpa = i/this.trailQueue.length;
-			g_Screen.drawRect (currPos.x - PLAYER_SIZE/2, currPos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor, transpa);
-		}
-	}
+	
 
 	this.hero.Draw ();
 };
