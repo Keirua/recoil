@@ -640,6 +640,47 @@ EndOfLevelState.prototype.KeyPress = function(event){
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Player class
+///////////////////////////////////////////////////////////////////////////////
+Player = function(){
+
+}
+
+Player.prototype = {
+	pos : {x:0,y:0},
+	speed : {x:0,y:0}
+}
+
+Player.prototype.Init = function (){
+
+}
+
+Player.prototype.InitFromLevel = function(level){
+	var midPos =  BLOC_SIZE/2;
+
+	for (var j = 0; j < NB_Y_BLOC; ++j) {
+		for (var i = 0; i < NB_X_BLOC; ++i) {
+			if (level[j][i] == BLOCK.PLAYER_START)
+			{
+				this.pos = {
+					x : i*BLOC_SIZE+midPos,
+					y : j*BLOC_SIZE+midPos
+				}
+				level[j][i] = BLOCK.NONE;
+			}
+		}
+	}
+	this.speed = {x:0,y:0};	
+}
+
+Player.prototype.Draw = function (){
+	var playerColor = 'rgb(255,255,255)';
+	
+	g_Screen.drawRect (this.pos.x-PLAYER_SIZE/2, this.pos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor);
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Game state
 ///////////////////////////////////////////////////////////////////////////////
 GameState = function(){
@@ -658,7 +699,7 @@ var heroStart = {
 	};
 
 GameState.prototype = {
-	hero : heroStart,
+	// hero : heroStart,
 	currLevel : [], // affected later based on currLevelIndex
 	trailQueue : [],
 	trailTimer : {},
@@ -673,26 +714,13 @@ GameState.prototype.OnEnterState = function (){
 }
 
 GameState.prototype.InitPlayer =function(){
-	var midPos =  BLOC_SIZE/2;
-
-	for (var j = 0; j < NB_Y_BLOC; ++j) {
-		for (var i = 0; i < NB_X_BLOC; ++i) {
-			if (this.currLevel[j][i] == BLOCK.PLAYER_START)
-			{
-				this.hero.pos = {
-					x : i*BLOC_SIZE+midPos,
-					y : j*BLOC_SIZE+midPos
-				}
-				this.currLevel[j][i] = BLOCK.NONE;
-			}
-		}
-	}
-	this.hero.speed = {x:0,y:0};
-
-	g_gameInfo.levelTimer.Start();
+	this.hero  = new Player ();
+	this.hero.InitFromLevel(this.currLevel);
 }
 
 GameState.prototype.InitLevel = function(){
+	g_gameInfo.levelTimer.Start();
+	
 	for (var mini = 0; mini < NB_Y_BLOC ; ++mini) {
 		 if (this.currLevel[mini][NB_X_BLOC-1] == BLOCK.NONE){
 		 	break;
@@ -703,6 +731,7 @@ GameState.prototype.InitLevel = function(){
 		 	break;
 		 }
 	}
+	
 	this.arrow = {
 		mini:mini,
 		maxi:maxi
@@ -711,9 +740,10 @@ GameState.prototype.InitLevel = function(){
 
 GameState.prototype.InitGame =function(){
 	this.currLevel = levels[g_gameInfo.currLevelIndex].clone();
-	
+
+	this.InitLevel();	
 	this.InitPlayer();
-	this.InitLevel();
+
 	this.trailTimer = new Timer ();
 	this.trailTimer.Start ();
 	this.trailQueue = [];
@@ -971,9 +1001,8 @@ GameState.prototype.DrawLevel = function (level) {
 				);
 };
 
-
 GameState.prototype.DrawPlayer = function () {
-	var playerColor = 'rgb(255,255,255)';
+	var playerColor = "white";
 	if (this.trailQueue.length > 0)
 	{
 		for (i = 0; i < this.trailQueue.length; ++i)
@@ -983,8 +1012,8 @@ GameState.prototype.DrawPlayer = function () {
 			g_Screen.drawRect (currPos.x - PLAYER_SIZE/2, currPos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor, transpa);
 		}
 	}
-	g_Screen.drawRect (this.hero.pos.x-PLAYER_SIZE/2, this.hero.pos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor);
 
+	this.hero.Draw ();
 };
 
 ///////////////////////////////////////////////////////////////////////////////
