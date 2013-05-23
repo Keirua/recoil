@@ -91,8 +91,8 @@ var level1 = [
 	[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-	[1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,1,1,1,1,1,2,2,0,2,2,2,0,2,2,2,2,2,2,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
@@ -391,21 +391,44 @@ var ExplosionEffect = function (params){
 	
 	this.done = false;
 
-	this.particles = [];
+	this.particles   = [];
 	this.nbParticles = params.nbParticles;
+	this.ORIENTATION_TOP   = 0;
+	this.ORIENTATION_LEFT  = 1;
+	this.ORIENTATION_RIGHT = 2;
+	
 	for (var i = 0; i < params.nbParticles; ++i){
+		var currSpeed = {x:0, y:0};
+		// if (params.orientation == this.ORIENTATION_TOP){
+			var currSize = 1+(Math.random ()*(5-1));
+			currSpeed.x = Math.random ()-0.5,
+			currSpeed.y = -Math.random ()*0.5;
+
+			currSpeed.x /= (0.2*currSize);
+			currSpeed.y /= (0.2*currSize);
+		// }
+		// else
+		// {
+		// 	currSpeed.y = Math.random ()-0.5;
+		// 	if (params.orientation == this.ORIENTATION_RIGHT)
+		// 		currSpeed.x = Math.random ()*0.5;	
+		// 	else
+		// 		currSpeed.x = -Math.random ()*0.5;	
+		// }
+
 		this.particles.push ({
 			pos : {
 				x: params.pos.x,
 				y: params.pos.y
 			},
 			speed : {
-				x : Math.random ()-0.5,
-				y : -Math.random ()*0.5
+				x : currSpeed.x,
+				y : currSpeed.y
 			},
-			size : 1+(Math.random ()*(5-1))
+			size : currSize
 		});
-	}
+	}		
+
 
 	this.Update = function (dt){
 		this.elapsed += dt;
