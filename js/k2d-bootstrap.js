@@ -29,6 +29,27 @@ Screen = function (engine){
 	this.context = engine.context;
 }
 
+Screen.prototype.drawLine = function (p1, p2, col, alpha){
+	if (alpha != undefined)
+	{
+		this.context.save ();
+		this.context.globalAlpha = alpha;
+	}
+	this.context.fillStyle = col;
+	
+	this.context.beginPath();
+	
+	this.context.moveTo(p1.x,p1.y);
+    this.context.lineTo(p2.x,p2.y);
+    
+    this.context.stroke();
+
+	if (alpha != undefined)
+	{
+			this.context.restore ();
+	}
+}
+
 Screen.prototype.drawRect = function (px, py, sizex, sizey, col, alpha){
 	if (alpha != undefined)
 	{

@@ -10,13 +10,15 @@ var PLAYER_SIZE = 8;
 
 var SPEED_X =  2; // movement in pixels per second
 var MAX_SPEED_X =  1;
-var BOUNCE_SPEED_Y =  0.8;
+var BOUNCE_SPEED_Y =  1;
 var G = 2;
 
 var MAX_TRAIL_QUEUE = 15;
 var TIME_BETWEEN_TRAIL = 15; // 50ms between 2 additions of blocks
 
 var DOG_SIZE = 120;
+
+var MAX_COLLISION_INTERVAL = 0.005;
 
 var BLOCK = {
 	NONE : 0,
@@ -114,11 +116,11 @@ var level2 = [
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
 	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-	[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-	[1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1],
-	[1,5,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
+	[1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+	[1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+	[1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+	[1,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1],
+	[1,5,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1],
 	[1,0,0,0,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1],
 	[1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
@@ -324,7 +326,7 @@ var defaultReplay = {
 	};
 
 GameInfo.prototype = {
-	currLevelIndex : 1,
+	currLevelIndex : 2,
 	currDeath : 0,
 	totalDeath : 0,
 	levelTimer : {},
@@ -749,7 +751,6 @@ Player.prototype.Draw = function (){
 	g_Screen.drawRect (this.pos.x-PLAYER_SIZE/2, this.pos.y-PLAYER_SIZE/2, PLAYER_SIZE, PLAYER_SIZE, playerColor);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Game state
 ///////////////////////////////////////////////////////////////////////////////
@@ -758,21 +759,11 @@ GameState = function(){
 	this.InitGame();
 }
 
-var defaultSpeed = { 
-		x : 0, 
-		y : 0
-	};
-
-var heroStart = {
-		speed : { x : 0, y : 0 },
-		pos : { x : 600, y : 400 }
-	};
-
 GameState.prototype = {
-	// hero : heroStart,
 	currLevel : [], // affected later based on currLevelIndex
 	
-	arrow : {}
+	arrow : {},
+	elapsedSinceLastCollision:0
 }
 
 GameState.prototype.OnEnterState = function (){
@@ -813,14 +804,12 @@ GameState.prototype.InitGame =function(){
 
 	this.InitLevel();	
 	this.InitPlayer();
-
+	this.elapsedSinceLastCollision = 0;
 
 }
 
 GameState.prototype.KeyPress = function(event){
-	// if (event.keyCode == KB_ENTER) {	// Pressing "enter"
-	// 	gameEngine.ChangeState("editor");		
-	// }
+
 }
 
 GameState.prototype.UpdateCurrentReplay = function (dt){
@@ -833,6 +822,7 @@ GameState.prototype.UpdateCurrentReplay = function (dt){
 } 
 
 GameState.prototype.Update = function (modifier) {
+	this.dt = modifier;
 	this.UpdateCurrentReplay (modifier);
 
 	if (KB_LEFT in gameEngine.keysDown) {
@@ -862,7 +852,8 @@ GameState.prototype.Update = function (modifier) {
 		}
 	}
 
-	this.handleCollisions(modifier);
+	this.handleCollisions(this.elapsedSinceLastCollision + this.dt);
+	this.elapsedSinceLastCollision = 0;
 
 	if (this.hero.pos.y > GAME_HEIGHT){
 		this.die();
@@ -901,6 +892,7 @@ GameState.prototype.getCollisionInfo = function (){
 		x : this.hero.pos.x + this.hero.speed.x,
 		y : this.hero.pos.y + this.hero.speed.y
 	}
+
 	this.hero.cell = getCell (this.hero.pos);
 	var newCell = getCell (newPos);
 
@@ -935,7 +927,7 @@ GameState.prototype.getCollisionInfo = function (){
 				collisionInfo.collisionCell = currCell;
 				collisionInfo.intersectionPoint = currPoint;
 				collisionInfo.blockType = blockType;
-
+				// console.log (collisionInfo);
 				break;
 			}
 		}
@@ -948,7 +940,7 @@ GameState.prototype.handlePhysics = function (collisionInfo){
 	if (collisionInfo.blockType != BLOCK.NONE) {
 		if (collisionInfo.collisionCell.x != this.hero.cell.x)
 			this.hero.speed.x *= -1;
-		else if (collisionInfo.collisionCell.y > this.hero.cell.y )
+		else if (collisionInfo.collisionCell.y > this.hero.cell.y)
 		{
 			this.hero.speed.y = -BOUNCE_SPEED_Y;
 		}			
@@ -968,7 +960,16 @@ GameState.prototype.handleGameObjects = function (collisionInfo){
 		{
 			this.currLevel[currBlock.y][currBlock.x] = BLOCK.NONE;
 			gameEngine.effects.push ( new BlockDisappearEffect ({color:"grey", duration:1, pos:{x:currBlock.x*BLOC_SIZE, y:currBlock.y*BLOC_SIZE}, nbSubdivisions:4}) );
-		}			
+		}
+		// attempt at handling bounces on walls
+		else if (collisionInfo.blockType == BLOCK.WALL){
+			if (KB_RIGHT in gameEngine.keysDown && collisionInfo.collisionCell.x < this.hero.cell.x) {
+				this.hero.speed.y = -BOUNCE_SPEED_Y;
+			}
+			if (KB_LEFT in gameEngine.keysDown && collisionInfo.collisionCell.x > this.hero.cell.x) {
+				this.hero.speed.y = -BOUNCE_SPEED_Y;
+			}
+		}
 	}
 }
 
@@ -994,6 +995,7 @@ GameState.prototype.Draw = function () {
 	g_Screen.drawRect (0,0, GAME_WIDTH, GAME_HEIGHT, "#303030");
 	this.DrawLevel(this.currLevel);
 	this.DrawPlayer();
+
 };
 
 imageName = {
@@ -1055,9 +1057,10 @@ GameState.prototype.DrawLevel = function (level) {
 
 GameState.prototype.DrawPlayer = function () {
 	var playerColor = "white";
-	
-
+	var MULTIPLIER = 1000;
+	// console.log (this.dt*MULTIPLIER);
 	this.hero.Draw ();
+	g_Screen.drawLine (this.hero.pos, {x:this.hero.pos.x+this.hero.speed.x*this.dt*MULTIPLIER, y:this.hero.pos.y+this.hero.speed.y*this.dt*MULTIPLIER}, 'red');
 };
 
 ///////////////////////////////////////////////////////////////////////////////
