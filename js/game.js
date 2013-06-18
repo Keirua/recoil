@@ -11,6 +11,7 @@ var PLAYER_SIZE = 8;
 var SPEED_X =  2; // movement in pixels per second
 var MAX_SPEED_X =  1;
 var BOUNCE_SPEED_Y =  1;
+var REBOUND_MODIFIER = -0.8;
 var G = 2;
 
 var MAX_TRAIL_QUEUE = 15;
@@ -939,7 +940,7 @@ GameState.prototype.getCollisionInfo = function (){
 GameState.prototype.handlePhysics = function (collisionInfo){
 	if (collisionInfo.blockType != BLOCK.NONE) {
 		if (collisionInfo.collisionCell.x != this.hero.cell.x)
-			this.hero.speed.x *= -1;
+			this.hero.speed.x *= REBOUND_MODIFIER;
 		else if (collisionInfo.collisionCell.y > this.hero.cell.y)
 		{
 			this.hero.speed.y = -BOUNCE_SPEED_Y;
